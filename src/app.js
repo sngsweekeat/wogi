@@ -1,7 +1,5 @@
-
-const axios = require('axios')
-const url = 'http://checkip.amazonaws.com/';
-let response;
+const hello = require('./handlers/hello');
+const howdy = require('./handlers/howdy');
 
 /**
  *
@@ -37,21 +35,33 @@ let response;
  * @returns {Object} object.body - JSON Payload to be returned
  * 
  */
-exports.lambdaHandler = async (event, context) => {
-    try {
-        console.log(`Event: ${JSON.stringify(event)}`);
-        const ret = await axios(url);
-        response = {
-            'statusCode': 200,
-            'body': JSON.stringify({
-                message: 'hello there, world',
-                location: ret.data.trim()
-            })
-        }
-    } catch (err) {
-        console.log(err);
-        return err;
+exports.main = async (event, context) => {
+    console.log(JSON.stringify(event));
+    switch (event.path) {
+        case '/hello':
+            return hello.handler(event, context);
+        case '/howdy':
+            return howdy.handler(event, context);
+        default:
+            return {
+                statusCode: 404,
+                body: 'Not found'
+            };
     }
+    // try {
+    //     console.log(`Event: ${JSON.stringify(event)}`);
+    //     const ret = await axios(url);
+    //     response = {
+    //         'statusCode': 200,
+    //         'body': JSON.stringify({
+    //             message: 'hello there, world',
+    //             location: ret.data.trim()
+    //         })
+    //     }
+    // } catch (err) {
+    //     console.log(err);
+    //     return err;
+    // }
 
-    return response
+    // return response
 };
