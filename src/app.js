@@ -48,20 +48,4 @@ exports.main = async (event, context) => {
                 body: 'Not found'
             };
     }
-    // try {
-    //     console.log(`Event: ${JSON.stringify(event)}`);
-    //     const ret = await axios(url);
-    //     response = {
-    //         'statusCode': 200,
-    //         'body': JSON.stringify({
-    //             message: 'hello there, world',
-    //             location: ret.data.trim()
-    //         })
-    //     }
-    // } catch (err) {
-    //     console.log(err);
-    //     return err;
-    // }
-
-    // return response
 };

@@ -12,7 +12,7 @@
   "scripts": {
     "start": "cd ..; sam local start-api",
     "build": "cd ..; sam package --output-template-file packaged.yaml --s3-bucket govtalk",
-    "deploy": "cd ..; sam deploy --template-file packaged.yaml --stack-name sam-app --capabilities CAPABILITY_IAM --region ap-southeast-1",
+    "deploy": "cd ..; sam deploy --template-file packaged.yaml --stack-name GovTalk --capabilities CAPABILITY_IAM --region ap-southeast-1",
     "test": "mocha tests/unit/"
   },
   "devDependencies": {
