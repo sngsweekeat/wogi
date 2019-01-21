@@ -1,5 +1,6 @@
 const hello = require('./handlers/hello');
 const howdy = require('./handlers/howdy');
+const writeMessage = require('./handlers/write-message');
 
 /**
  *
@@ -16,7 +17,7 @@ const howdy = require('./handlers/howdy');
  * @param {Object} event.body - A JSON string of the request payload.
  * @param {boolean} event.body.isBase64Encoded - A boolean flag to indicate if the applicable request payload is Base64-encode
  *
- * Context doc: https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html 
+ * Context doc: https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html
  * @param {Object} context
  * @param {string} context.logGroupName - Cloudwatch Log Group name
  * @param {string} context.logStreamName - Cloudwatch Log stream name.
@@ -33,7 +34,7 @@ const howdy = require('./handlers/howdy');
  * @returns {string} object.statusCode - HTTP Status Code to be returned to the client
  * @returns {Object} object.headers - HTTP Headers to be returned
  * @returns {Object} object.body - JSON Payload to be returned
- * 
+ *
  */
 exports.main = async (event, context) => {
     console.log(JSON.stringify(event));
@@ -42,6 +43,8 @@ exports.main = async (event, context) => {
             return hello.handler(event, context);
         case '/howdy':
             return howdy.handler(event, context);
+        case '/message':
+          return writeMessage.handler(event, context);
         default:
             return {
                 statusCode: 404,
