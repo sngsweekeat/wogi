@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Deployment for serverless API
+
+Globals:
+    Api:
+        BinaryMediaTypes:
+            - "*~1*"
+
+Resources:
+  GenOTP:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: nodejs8.10
+      CodeUri: gen-otp/
+      Events:
+        GetApi:
+          Type: Api
+          Properties:
+            Path: /user/otp
+            Method: get
+    
+  MessengerHook:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: nodejs8.10
+      CodeUri: messenger-hook/
+      Events:
+        GetApi:
+          Type: Api
+          Properties:
+            Path: /messenger/hook
+            Method: post
+  
+  TelegramHook:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: nodejs8.10
+      CodeUri: telegram-hook/
+      Events:
+        GetApi:
+          Type: Api
+          Properties:
+            Path: /telegram/hook
+            Method: post
+  
+  WriteMessageToDB:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: nodejs8.10
+      CodeUri: write-message-to-db/
+      Events:
+        GetApi:
+          Type: Api
+          Properties:
+            Path: /message
+            Method: put
+    
+  SendMessage:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: nodejs8.10
+      CodeUri: send-message/
+      Events:
+        GetApi:
+          Type: Api
+          Properties:
+            Path: /message
+            Method: post
+  
