@@ -39,6 +39,12 @@ Resources:
             Properties:
               Path: /telegram/hook
               Method: post
+        NewMessageDeliveriesStream:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt DynamoDBTable.StreamArn
+            BatchSize: 100
+            StartingPosition: TRIM_HORIZON
 
   WriteMessageToDB:
     Type: AWS::Serverless::Function
@@ -54,10 +60,10 @@ Resources:
             Path: /message
             Method: post
 
-  SendMessageToUser:
+  CreateMessageDeliveries:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: send-message/
+      CodeUri: create-message-deliveries/
       Handler: app.lambdaHandler
       Runtime: nodejs8.10
       Policies: AWSLambdaDynamoDBExecutionRole
@@ -68,19 +74,3 @@ Resources:
             Stream: !GetAtt DynamoDBTable.StreamArn
             BatchSize: 100
             StartingPosition: TRIM_HORIZON
-
-  DynamoDBTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: Users
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-      StreamSpecification:
-        StreamViewType: NEW_IMAGE
