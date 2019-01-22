@@ -53,6 +53,7 @@ Resources:
       Runtime: nodejs8.10
       CodeUri: write-message-to-db/
       Timeout: 30
+      Policies: arn:aws:iam::247544061391:policy/WogiDynamoDBFullAccess
       Events:
         GetApi:
           Type: Api
@@ -64,9 +65,10 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: create-message-deliveries/
+      Timeout: 30
       Handler: app.lambdaHandler
       Runtime: nodejs8.10
-      Policies: AWSLambdaDynamoDBExecutionRole
+      Policies: arn:aws:iam::247544061391:policy/WogiDynamoDBFullAccess
       Events:
         Stream:
           Type: DynamoDB
