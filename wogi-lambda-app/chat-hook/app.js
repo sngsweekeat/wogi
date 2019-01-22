@@ -1,5 +1,7 @@
 
 const axios = require('axios')
+const messenger = require('./messenger');
+const telegram = require('./telegram');
 const url = 'http://checkip.amazonaws.com/';
 let response;
 
@@ -18,7 +20,7 @@ let response;
  * @param {Object} event.body - A JSON string of the request payload.
  * @param {boolean} event.body.isBase64Encoded - A boolean flag to indicate if the applicable request payload is Base64-encode
  *
- * Context doc: https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html 
+ * Context doc: https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html
  * @param {Object} context
  * @param {string} context.logGroupName - Cloudwatch Log Group name
  * @param {string} context.logStreamName - Cloudwatch Log stream name.
@@ -35,22 +37,20 @@ let response;
  * @returns {string} object.statusCode - HTTP Status Code to be returned to the client
  * @returns {Object} object.headers - HTTP Headers to be returned
  * @returns {Object} object.body - JSON Payload to be returned
- * 
+ *
  */
-exports.lambdaHandler = async (event, context) => {
-    try {
-        const ret = await axios(url);
-        response = {
-            'statusCode': 200,
-            'body': JSON.stringify({
-                message: 'hello worldaaa',
-                location: ret.data.trim()
-            })
-        }
-    } catch (err) {
-        console.log(err);
-        return err;
-    }
+// require('dotenv').config();
 
-    return response
+exports.lambdaHandler = async (event, context) => {
+    switch (event.path) {
+        case '/telegram/hook':
+            return await messenger.handler(event, context);
+        case '/messenger/hook':
+            return await telegram.handler(event, context);
+        default:
+            return {
+                statusCode: 404,
+                body: 'Not found'
+            };
+    }
 };
