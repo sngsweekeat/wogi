@@ -9,7 +9,8 @@
 	"dependencies": {
 		"axios": "^0.18.0",
 		"base-64": "^0.1.0",
-		"dynamoose": "^1.5.0"
+		"dynamoose": "^1.5.0",
+		"is-base64": "^0.1.0"
 	},
 	"scripts": {
 		"test": "mocha tests/unit/"

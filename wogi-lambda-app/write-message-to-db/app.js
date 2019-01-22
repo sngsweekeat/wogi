@@ -40,6 +40,7 @@ let response;
 const dynamoose = require("dynamoose");
 const uuidv1 = require("uuid/v1");
 const base64 = require("base-64");
+const isBase64 = require("is-base64");
 
 function messageModel() {
 
@@ -83,7 +84,17 @@ const saveMessage = (message) => {
 exports.lambdaHandler = async (event, context) => {
 	try {
 		const { body } = event;
-		const message = JSON.parse(base64.decode(body));
+		console.log("Incoming body is: ", body);
+		let message;
+		if (typeof body === "string") {
+			if (isBase64(body)) {
+				message = JSON.parse(base64.decode(body));
+			} else {
+				message = JSON.parse(body);
+			}
+		} else {
+			message = body;
+		}
 		await saveMessage(message);
 		const ret = await axios(url);
 		response = {
