@@ -37,7 +37,7 @@ Resources:
                     Type: Api
                     Properties:
                       Path: /message
-                      Method post
+                      Method: post
 
     ProcessDynamoDBStream:
       Type: AWS::Serverless::Function
