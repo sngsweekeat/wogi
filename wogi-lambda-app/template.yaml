@@ -18,35 +18,28 @@ Resources:
         GetApi:
           Type: Api
           Properties:
+            # nric will be passed through query params
             Path: /user/otp
             Method: get
-    
-  MessengerHook:
+
+  ChatHook:
     Type: AWS::Serverless::Function
     Properties:
       Handler: app.lambdaHandler
       Runtime: nodejs8.10
       CodeUri: messenger-hook/
       Events:
-        GetApi:
+        MessengerHook:
           Type: Api
           Properties:
             Path: /messenger/hook
             Method: post
-  
-  TelegramHook:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: app.lambdaHandler
-      Runtime: nodejs8.10
-      CodeUri: telegram-hook/
-      Events:
-        GetApi:
-          Type: Api
-          Properties:
-            Path: /telegram/hook
-            Method: post
-  
+        TelegramHook:
+            Type: Api
+            Properties:
+              Path: /telegram/hook
+              Method: post
+
   WriteMessageToDB:
     Type: AWS::Serverless::Function
     Properties:
@@ -58,18 +51,35 @@ Resources:
           Type: Api
           Properties:
             Path: /message
-            Method: put
-    
-  SendMessage:
+            Method: post
+
+  SendMessageToUser:
     Type: AWS::Serverless::Function
     Properties:
+      CodeUri: send-message/
       Handler: app.lambdaHandler
       Runtime: nodejs8.10
-      CodeUri: send-message/
+      Policies: AWSLambdaDynamoDBExecutionRole
       Events:
-        GetApi:
-          Type: Api
+        Stream:
+          Type: DynamoDB
           Properties:
-            Path: /message
-            Method: post
-  
+            Stream: !GetAtt DynamoDBTable.StreamArn
+            BatchSize: 100
+            StartingPosition: TRIM_HORIZON
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Users
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
