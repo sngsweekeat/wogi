@@ -1,8 +1,4 @@
 
-const axios = require('axios')
-const url = 'http://checkip.amazonaws.com/';
-let response;
-
 /**
  *
  * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
@@ -96,12 +92,10 @@ exports.lambdaHandler = async (event, context) => {
 			message = body;
 		}
 		await saveMessage(message);
-		const ret = await axios(url);
-		response = {
+		const response = {
 			'statusCode': 200,
 			'body': JSON.stringify({
-				message: result,
-				location: ret.data.trim()
+				message,
 			})
 		}
 		return response;
