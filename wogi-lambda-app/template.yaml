@@ -27,7 +27,7 @@ Resources:
     Properties:
       Handler: app.lambdaHandler
       Runtime: nodejs8.10
-      CodeUri: messenger-hook/
+      CodeUri: chat-hook/
       Events:
         MessengerHook:
           Type: Api
