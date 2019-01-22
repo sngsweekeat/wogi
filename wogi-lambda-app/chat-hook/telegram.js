@@ -1,10 +1,7 @@
 const dynamoose = require('dynamoose');
-dynamoose.AWS.config.update({
-  region: 'ap-southeast-1',
-});
-dynamoose.local();
 
 exports.handler = async (event, context) => {
+  console.log("HANDLING TELEGRAM")
   const Cat = dynamoose.model('Cat', { id: Number, name: String });
 
   // Create a new cat object

@@ -1,23 +1,30 @@
 const dynamoose = require('dynamoose');
-dynamoose.AWS.config.update({
-  region: 'ap-southeast-1',
-});
-dynamoose.local();
 
 exports.handler = async (event, context) => {
-  const Cat = dynamoose.model('Cat', { id: Number, name: String });
+  console.log("HANDLING MESSENGER")
 
-  // Create a new cat object
-  const garfield = new Cat({ id: 666, name: 'Garfield' });
+  try {
+    const Cat = dynamoose.model('Cat', { id: Number, name: String });
+    const garfield = new Cat({ id: 333, name: 'TEST CAT' });
+    console.log("BEFORE SAVE")
+    await garfield.save();
 
-  // Save to DynamoDB
-  await garfield.save();
+    console.log("AFTER SAVE")
+    // Lookup in DynamoDB
+    const badCat = await Cat.get(333);
 
-  // Lookup in DynamoDB
-  const badCat = await Cat.get(666);
+    console.log("GOT bAD CAT", badCat.name)
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ cat: badCat }),
-  };
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ cat: badCat }),
+    };
+  } catch(e) {
+    console.log("ERROR saving", e)
+
+    return {
+      statusCod: 500,
+      body: JSON.stringify(e)
+    }
+  }
 }

@@ -44,9 +44,9 @@ let response;
 exports.lambdaHandler = async (event, context) => {
     switch (event.path) {
         case '/telegram/hook':
-            return await messenger.handler(event, context);
-        case '/messenger/hook':
             return await telegram.handler(event, context);
+        case '/messenger/hook':
+            return await messenger.handler(event, context);
         default:
             return {
                 statusCode: 404,
