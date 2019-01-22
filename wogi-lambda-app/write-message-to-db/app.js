@@ -33,41 +33,15 @@
  * @returns {Object} object.body - JSON Payload to be returned
  *
  */
-const dynamoose = require("dynamoose");
+const createMessage = require("./message.model")
 const uuidv1 = require("uuid/v1");
 const base64 = require("base-64");
 const isBase64 = require("is-base64");
 
-function messageModel() {
-
-	const options = {
-		create: false, // Create table in DB, if it does not exist,
-		update: true, // Update remote indexes if they do not match local index structure
-	}
-
-	const messageSchema = new dynamoose.Schema({
-		id: {
-			type: String,
-			hashKey: true,
-		},
-		message: {
-			type: String,
-		},
-		users: {
-			type: [String],
-		},
-		agencyId: {
-			type: String,
-		}
-	});
-	const Message = dynamoose.model('wogi-messages', messageSchema, options);
-	return Message;
-}
-
 const saveMessage = (message) => {
 	console.log("message is: ", message);
 	return new Promise((resolve, reject) => {
-		const Message = messageModel();
+		const Message = createMessage();
 		const messageToSave = new Message({ id: uuidv1(), ...message });
 
 		messageToSave.save(function (err) {
