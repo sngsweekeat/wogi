@@ -1,8 +1,3 @@
-
-const axios = require('axios')
-const url = 'http://checkip.amazonaws.com/';
-let response;
-
 /**
  *
  * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
@@ -18,7 +13,7 @@ let response;
  * @param {Object} event.body - A JSON string of the request payload.
  * @param {boolean} event.body.isBase64Encoded - A boolean flag to indicate if the applicable request payload is Base64-encode
  *
- * Context doc: https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html 
+ * Context doc: https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html
  * @param {Object} context
  * @param {string} context.logGroupName - Cloudwatch Log Group name
  * @param {string} context.logStreamName - Cloudwatch Log stream name.
@@ -35,16 +30,51 @@ let response;
  * @returns {string} object.statusCode - HTTP Status Code to be returned to the client
  * @returns {Object} object.headers - HTTP Headers to be returned
  * @returns {Object} object.body - JSON Payload to be returned
- * 
+ *
  */
+const dynamoose = require('dynamoose');
+const uuidv4 = require('uuid/v4');
+
+const modelOptions = {
+    create: false,
+    update: true,
+};
+const userSchema = new dynamoose.Schema({
+    id: {
+        type: String,
+        hashKey: true,
+    },
+    otp: {
+        type: String,
+    },
+    platform: {
+        type: String,
+    },
+    chatId: {
+        type: String,
+    },
+}, {
+    timestamps: true,
+});
+
+const User = dynamoose.model('wogi-users', userSchema, modelOptions);
+
+const createUser = async (id) => {
+    const otp = `WOGI-REG-${uuidv4()}`;
+    return await User.create({
+        id,
+        otp,
+    });
+}
+
 exports.lambdaHandler = async (event, context) => {
     try {
-        const ret = await axios(url);
+        const { id } = event.queryStringParameters;
+        const user = await createUser(id);
         response = {
             'statusCode': 200,
             'body': JSON.stringify({
-                message: 'hello worldaaa',
-                location: ret.data.trim()
+                otp: user.otp,
             })
         }
     } catch (err) {
