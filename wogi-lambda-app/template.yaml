@@ -46,6 +46,7 @@ Resources:
       Handler: app.lambdaHandler
       Runtime: nodejs8.10
       CodeUri: write-message-to-db/
+      Timeout: 30
       Events:
         GetApi:
           Type: Api

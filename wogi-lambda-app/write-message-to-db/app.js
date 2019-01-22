@@ -37,22 +37,57 @@ let response;
  * @returns {Object} object.body - JSON Payload to be returned
  *
  */
-exports.lambdaHandler = async (event, context) => {
-    try {
-        const ret = await axios(url);
-        response = {
-            'statusCode': 200,
-            'body': JSON.stringify({
-                message: 'hello worldaaa',
-                location: ret.data.trim()
-            })
-        }
-    } catch (err) {
-        console.log(err);
-        return err;
-    }
+const dynamoose = require("dynamoose");
+dynamoose.local();
 
-    return response
+function messageModel() {
+	const messageSchema = new dynamoose.Schema({
+		id: {
+			type: Number,
+			hashKey: true,
+		},
+		message: {
+			type: String,
+		},
+		users: {
+			type: [String],
+		},
+		agencyId: {
+			type: String,
+		}
+	});
+	const Message = dynamoose.model('Messages', messageSchema);
+	return Message;
+}
+
+exports.lambdaHandler = async (event, context) => {
+	try {
+		const Message = messageModel();
+		const messageToSave = new Message({
+			id: 123,
+			message: "test",
+			users: ["test"],
+			agencyId: "test",
+		});
+		messageToSave.put(function (err) {
+			if (err) { return console.log(err); }
+			console.log('Ta-da!');
+		});
+
+		const ret = await axios(url);
+		response = {
+			'statusCode': 200,
+			'body': JSON.stringify({
+				message: "blah",
+				location: ret.data.trim()
+			})
+		}
+	} catch (err) {
+		console.log(err);
+		return err;
+	}
+
+	return response
 };
 
 /* require('dotenv').config() */
