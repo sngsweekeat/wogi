@@ -1,0 +1,10 @@
+{
+	"body": {
+		"message": "abc",
+		"users": [
+			"S1234567A",
+			"S1212121A"
+		],
+		"agencyId": "MSF"
+	}
+}
