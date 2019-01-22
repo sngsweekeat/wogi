@@ -33,14 +33,65 @@
  * @returns {Object} object.body - JSON Payload to be returned
  *
  */
+
+const uuidv1 = require("uuid/v1");
+const createUserObj = require("./user.model");
+const createMessageDeliveryObj = require("./message-delivery.model")
+let response;
+
+const getUsers = (users) => {
+	console.log("Executing query for users: ", users);
+	const User = createUserObj();
+	return new Promise(function(resolve, reject) {
+		User.scan('id').in(users).exec(function (err, users) {
+			console.log("Query executed...");
+			if(err) reject(err);
+			else resolve(users);
+		});
+	});
+
+}
+
+const saveMessageDelivery = (msgDelivery) => {
+	console.log("Saving MessageDelivery: ", msgDelivery);
+	const MessageDelivery = createMessageDeliveryObj();
+	return new Promise(function(resolve, reject) {
+		const msgDeliveryToSave = new MessageDelivery({ id: uuidv1(), ...msgDelivery });
+
+		msgDeliveryToSave.save(function (err) {
+			if(err) reject(err);
+			else resolve();
+		});
+	});
+
+}
+
 exports.lambdaHandler = async (event, context) => {
 	try {
-		console.log(event);
-		const { dynamodb } = event;
-		const response = {
+		for (const record of event.Records) {
+			console.log('Stream record: ', JSON.stringify(record, null, 2));
+			if (record.eventName == 'INSERT') {
+				let messageId = JSON.stringify(record.dynamodb.NewImage.id.S);
+				let agencyId = JSON.stringify(record.dynamodb.NewImage.agencyId.S);
+				let message = JSON.stringify(record.dynamodb.NewImage.message.S);
+				let users = record.dynamodb.NewImage.users.SS;
+			
+				let usersToMsg = await getUsers(users);
+				if(usersToMsg){
+					for (const userRecord of usersToMsg) {
+						console.log(`Saving message id ${messageId} for user ${userRecord.id}`);
+						await saveMessageDelivery({userId: userRecord.id, chatId: "test", message: message, messageId: messageId})
+					}
+				}
+			}
+
+			console.log("Complete processing for current stream record");
+		};
+
+		response = {
 			'statusCode': 200,
 			'body': JSON.stringify({
-				message: 'hello worldaaa',
+				message: `# of Message record processed: ${event.Records.length}`,
 				event,
 			})
 		}
@@ -49,6 +100,5 @@ exports.lambdaHandler = async (event, context) => {
 		return err;
 	}
 
-	console.log("RESPONSE", response)
 	return response
 };
