@@ -42,6 +42,12 @@ const uuidv1 = require("uuid/v1");
 const base64 = require("base-64");
 
 function messageModel() {
+
+	const options = {
+		create: false, // Create table in DB, if it does not exist,
+		update: true, // Update remote indexes if they do not match local index structure
+	}
+
 	const messageSchema = new dynamoose.Schema({
 		id: {
 			type: String,
@@ -57,7 +63,7 @@ function messageModel() {
 			type: String,
 		}
 	});
-	const Message = dynamoose.model('wogi-messages', messageSchema);
+	const Message = dynamoose.model('wogi-messages', messageSchema, options);
 	return Message;
 }
 

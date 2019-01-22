@@ -42,7 +42,7 @@ Resources:
         NewMessageDeliveriesStream:
           Type: DynamoDB
           Properties:
-            Stream: !GetAtt DynamoDBTable.StreamArn
+            Stream: !GetAtt MessageDeliveriesTable.StreamArn
             BatchSize: 100
             StartingPosition: TRIM_HORIZON
 
@@ -71,6 +71,53 @@ Resources:
         Stream:
           Type: DynamoDB
           Properties:
-            Stream: !GetAtt DynamoDBTable.StreamArn
+            Stream: !GetAtt MessagesTable.StreamArn
             BatchSize: 100
             StartingPosition: TRIM_HORIZON
+
+  UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: wogi-users
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
+  MessagesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: wogi-messages
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
+
+
+  MessageDeliveriesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: wogi-message-deliveries
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
