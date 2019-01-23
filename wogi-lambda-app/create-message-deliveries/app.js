@@ -35,17 +35,16 @@
  */
 
 const uuidv1 = require("uuid/v1");
-const createUserObj = require("./user.model");
-const createMessageDeliveryObj = require("./message-delivery.model")
+const User = require("./user.model").User;
+const MessageDelivery = require("./message-delivery.model").MessageDelivery;
 let response;
 
 const getUsers = (users) => {
 	console.log("Executing query for users: ", users);
-	const User = createUserObj();
-	return new Promise(function(resolve, reject) {
+	return new Promise(function (resolve, reject) {
 		User.scan('id').in(users).exec(function (err, userList) {
 			console.log("Query executed...");
-			if(err) reject(err);
+			if (err) reject(err);
 			else resolve(userList);
 		});
 	});
@@ -54,12 +53,11 @@ const getUsers = (users) => {
 
 const saveMessageDelivery = (msgDelivery) => {
 	console.log("Saving MessageDelivery: ", msgDelivery);
-	const MessageDelivery = createMessageDeliveryObj();
-	return new Promise(function(resolve, reject) {
+	return new Promise(function (resolve, reject) {
 		const msgDeliveryToSave = new MessageDelivery({ id: uuidv1(), ...msgDelivery });
 
 		msgDeliveryToSave.save(function (err) {
-			if(err) reject(err);
+			if (err) reject(err);
 			else resolve();
 		});
 	});
@@ -75,13 +73,13 @@ exports.lambdaHandler = async (event, context) => {
 				let agencyId = record.dynamodb.NewImage.agencyId.S;
 				let message = record.dynamodb.NewImage.message.S;
 				let users = record.dynamodb.NewImage.users.SS;
-			
-				let usersToMsg = ["S1234567Z","S6005040F"];
-				// let usersToMsg = await getUsers(users);
-				if(usersToMsg){
+
+				let usersToMsg = await getUsers(users);
+				if (usersToMsg) {
 					for (const userRecord of usersToMsg) {
 						console.log(`Saving message id ${messageId} for user ${userRecord.id}`);
-						await saveMessageDelivery({userId: userRecord.id, chatId: "1951112808339060", platform: "MESSENGER", message: message, messageId: messageId})
+						const { chatId, platform } = userRecord;
+						await saveMessageDelivery({ userId: userRecord.id, chatId, platform, message, messageId, deliveryStatus: "PENDING" })
 					}
 				}
 			}

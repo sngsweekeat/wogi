@@ -34,18 +34,22 @@
  *
  */
 
-const createMessageDeliveryObj = require("./message-delivery.model")
+const TelegramBot = require('node-telegram-bot-api');
+const MessageDelivery = require("./message-delivery.model").MessageDelivery;
 const axios = require("axios");
+const token = process.env.TELEGRAM_TOKEN;
+
+
+const bot = new TelegramBot(token, { polling: true });
 let response;
 
 const saveMessageDelivery = (msgDelivery) => {
 	console.log("Saving MessageDelivery: ", msgDelivery);
-	const MessageDelivery = createMessageDeliveryObj();
-	return new Promise(function(resolve, reject) {
+	return new Promise(function (resolve, reject) {
 		const msgDeliveryToSave = new MessageDelivery({ id: uuidv1(), ...msgDelivery });
 
 		msgDeliveryToSave.save(function (err) {
-			if(err) reject(err);
+			if (err) reject(err);
 			else resolve();
 		});
 	});
@@ -58,19 +62,19 @@ const callMessengerSendAPI = async (sender_psid, message) => {
 	console.log("callMessengerSendAPI...");
 	// Construct the message body
 	const body = {
-	  "recipient": {
-		"id": sender_psid
-	  },
-	  "message": message
+		"recipient": {
+			"id": sender_psid
+		},
+		"message": message
 	}
 	const params = { "access_token": process.env.PAGE_ACCESS_TOKEN };
 	// Send the HTTP request to the Messenger Platform
-	const response = await axios.post(FB_MESSENGER_URL,body,{params});
+	const response = await axios.post(FB_MESSENGER_URL, body, { params });
 	return response;
-  }
+}
 
-const updateMessageDeliveryStatus = (messageDeliveryId, deliveryStatus) => {
-
+const updateMessageDeliveryStatus = async (messageDeliveryId, deliveryStatus) => {
+	return MessageDelivery.update(messageDeliveryId, { deliveryStatus })
 }
 
 exports.lambdaHandler = async (event, context) => {
@@ -78,57 +82,65 @@ exports.lambdaHandler = async (event, context) => {
 		for (const record of event.Records) {
 			console.log('Stream record: ', JSON.stringify(record, null, 2));
 			if (record.eventName == 'INSERT') {
-				console.log('inside insert: ', record.eventName);
 				const chatId = record.dynamodb.NewImage.chatId.S;
 				const platform = record.dynamodb.NewImage.platform.S;
 				const message = record.dynamodb.NewImage.message.S;
 				const id = record.dynamodb.NewImage.id.S;
 				let result;
-				console.log(platform);
-				// check platofmr
-				try{
-
-					if(platform == "MESSENGER"){
-						console.log("inside messenger");
+				let deliveryStatus;
+				try {
+					if (platform == "MESSENGER") {
 						let msg = {
 							"text": message
 						}
 						console.log("Sending message through messenger...");
 						result = await callMessengerSendAPI(chatId, msg);
+						deliveryStatus = "SUCCESS";
 						console.log("result is: ", result);
-					}else if(platform == "TELEGRAM"){
-						
-					} 
-				}finally {
-					if(!!result) {
-						const deliveryStatus = (result.status == 200) ? "SUCCESS":"FAIL";
+					}
+					if (platform == "TELEGRAM") {
+						result = await bot.sendMessage(chatId, message);
+						deliveryStatus = "SUCCESS";
+						console.log("result is: ", result);
+					}
+				} catch (e) {
+					console.log('error is: ', e);
+					if (platform === "MESSENGER") {
+						if (e.response.status >= 400 && e.response.status < 500) {
+							deliveryStatus = "FAIL";
+						}
+						else {
+							throw e;
+						}
+					} else if (platform === "TELEGRAM") {
+						if (e.response.statusCode >= 400 && e.response.statusCode < 500) {
+							deliveryStatus = "FAIL";
+						}
+						else {
+							throw e;
+						}
+					}
+				}
+				finally {
+					if (!!deliveryStatus) {
 						await updateMessageDeliveryStatus(id, deliveryStatus);
 					}
-					
 				}
 				// call send message for platform
 				// wait for response from sendMessage
-					// if 200, update MessageDelivery deliveryStatus to true
-					// if >=400, throw error, AWS lambda will auto retry with the same stream event (?)
+				// if 200, update MessageDelivery deliveryStatus to true
+				// if >=400, throw error, AWS lambda will auto retry with the same stream event (?)
 				// exit
 
 			}
 			console.log("Complete processing for current stream record");
 		};
-
-		response = {
-			'statusCode': 200,
-			'body': JSON.stringify({
-				message: `# of MessageDelivery record processed: ${event.Records.length}`,
-				event,
-			})
-		}
+		console.log("Complete processing all stream records");
 	} catch (err) {
 		console.log(err);
 		return err;
 	}
 
-	return response
+	return "success";
 };
 
-  
