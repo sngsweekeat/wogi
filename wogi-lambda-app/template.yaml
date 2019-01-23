@@ -81,6 +81,22 @@ Resources:
             BatchSize: 100
             StartingPosition: TRIM_HORIZON
 
+  SendMessage:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: send-message/
+      Timeout: 30
+      Handler: app.lambdaHandler
+      Runtime: nodejs8.10
+      Policies: arn:aws:iam::247544061391:policy/WogiDynamoDBFullAccess
+      Events:
+        Stream:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt MessageDeliveriesTable.StreamArn
+            BatchSize: 100
+            StartingPosition: TRIM_HORIZON
+
   UsersTable:
       Type: AWS::DynamoDB::Table
       Properties:
