@@ -34,23 +34,9 @@
  *
  */
 
-const uuidv1 = require("uuid/v1");
-const createUserObj = require("./user.model");
 const createMessageDeliveryObj = require("./message-delivery.model")
+const axios = require("axios");
 let response;
-
-const getUsers = (users) => {
-	console.log("Executing query for users: ", users);
-	const User = createUserObj();
-	return new Promise(function(resolve, reject) {
-		User.scan('id').in(users).exec(function (err, userList) {
-			console.log("Query executed...");
-			if(err) reject(err);
-			else resolve(userList);
-		});
-	});
-
-}
 
 const saveMessageDelivery = (msgDelivery) => {
 	console.log("Saving MessageDelivery: ", msgDelivery);
@@ -66,33 +52,74 @@ const saveMessageDelivery = (msgDelivery) => {
 
 }
 
+const FB_MESSENGER_URL = "https://graph.facebook.com/v2.6/me/messages";
+
+const callMessengerSendAPI = async (sender_psid, message) => {
+	console.log("callMessengerSendAPI...");
+	// Construct the message body
+	const body = {
+	  "recipient": {
+		"id": sender_psid
+	  },
+	  "message": message
+	}
+	const params = { "access_token": process.env.PAGE_ACCESS_TOKEN };
+	// Send the HTTP request to the Messenger Platform
+	const response = await axios.post(FB_MESSENGER_URL,body,{params});
+	return response;
+  }
+
+const updateMessageDeliveryStatus = (messageDeliveryId, deliveryStatus) => {
+
+}
+
 exports.lambdaHandler = async (event, context) => {
 	try {
 		for (const record of event.Records) {
 			console.log('Stream record: ', JSON.stringify(record, null, 2));
 			if (record.eventName == 'INSERT') {
-				let messageId = record.dynamodb.NewImage.id.S;
-				let agencyId = record.dynamodb.NewImage.agencyId.S;
-				let message = record.dynamodb.NewImage.message.S;
-				let users = record.dynamodb.NewImage.users.SS;
-			
-				let usersToMsg = ["S1234567Z","S6005040F"];
-				// let usersToMsg = await getUsers(users);
-				if(usersToMsg){
-					for (const userRecord of usersToMsg) {
-						console.log(`Saving message id ${messageId} for user ${userRecord.id}`);
-						await saveMessageDelivery({userId: userRecord.id, chatId: "1951112808339060", platform: "MESSENGER", message: message, messageId: messageId})
-					}
-				}
-			}
+				console.log('inside insert: ', record.eventName);
+				const chatId = record.dynamodb.NewImage.chatId.S;
+				const platform = record.dynamodb.NewImage.platform.S;
+				const message = record.dynamodb.NewImage.message.S;
+				const id = record.dynamodb.NewImage.id.S;
+				let result;
+				console.log(platform);
+				// check platofmr
+				try{
 
+					if(platform == "MESSENGER"){
+						console.log("inside messenger");
+						let msg = {
+							"text": message
+						}
+						console.log("Sending message through messenger...");
+						result = await callMessengerSendAPI(chatId, msg);
+						console.log("result is: ", result);
+					}else if(platform == "TELEGRAM"){
+						
+					} 
+				}finally {
+					if(!!result) {
+						const deliveryStatus = (result.status == 200) ? "SUCCESS":"FAIL";
+						await updateMessageDeliveryStatus(id, deliveryStatus);
+					}
+					
+				}
+				// call send message for platform
+				// wait for response from sendMessage
+					// if 200, update MessageDelivery deliveryStatus to true
+					// if >=400, throw error, AWS lambda will auto retry with the same stream event (?)
+				// exit
+
+			}
 			console.log("Complete processing for current stream record");
 		};
 
 		response = {
 			'statusCode': 200,
 			'body': JSON.stringify({
-				message: `# of Message record processed: ${event.Records.length}`,
+				message: `# of MessageDelivery record processed: ${event.Records.length}`,
 				event,
 			})
 		}
@@ -103,3 +130,5 @@ exports.lambdaHandler = async (event, context) => {
 
 	return response
 };
+
+  

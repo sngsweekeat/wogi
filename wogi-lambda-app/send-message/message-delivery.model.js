@@ -18,9 +18,6 @@ module.exports = function MessageDelivery() {
 		chatId: {
 			type: String,
 		},
-		platform: {
-			type: String,
-		},
 		message: {
 			type: String,
 		},
