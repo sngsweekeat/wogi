@@ -1,7 +1,7 @@
 const dynamoose = require('dynamoose');
 
 const modelOptions = {
-    create: false,
+    create: true,
     update: true,
 };
 const userSchema = new dynamoose.Schema({
@@ -11,6 +11,10 @@ const userSchema = new dynamoose.Schema({
     },
     otp: {
         type: String,
+        index: {
+            global: true,
+            project: true,
+        },
     },
     platform: {
         type: String,

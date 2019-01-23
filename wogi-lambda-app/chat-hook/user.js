@@ -11,6 +11,10 @@ const userSchema = new dynamoose.Schema({
     },
     otp: {
         type: String,
+        index: {
+            global: true,
+            project: true,
+        },
     },
     platform: {
         type: String,
