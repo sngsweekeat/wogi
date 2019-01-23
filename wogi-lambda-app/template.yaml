@@ -15,6 +15,7 @@ Resources:
       Runtime: nodejs8.10
       CodeUri: gen-otp/
       Timeout: 30
+      Policies: arn:aws:iam::247544061391:policy/WogiDynamoDBFullAccess
       Events:
         GetApi:
           Type: Api
@@ -30,6 +31,7 @@ Resources:
       Runtime: nodejs8.10
       CodeUri: chat-hook/
       Timeout: 30
+      Policies: arn:aws:iam::247544061391:policy/WogiDynamoDBFullAccess
       Events:
         MessengerHook:
           Type: Api
