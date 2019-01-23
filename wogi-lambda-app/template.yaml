@@ -33,11 +33,16 @@ Resources:
       Timeout: 30
       Policies: arn:aws:iam::247544061391:policy/WogiDynamoDBFullAccess
       Events:
-        MessengerHook:
+        MessengerPostHook:
           Type: Api
           Properties:
             Path: /messenger/hook
             Method: post
+        MessengerGetHook:
+          Type: Api
+          Properties:
+            Path: /messenger/hook
+            Method: get
         TelegramHook:
             Type: Api
             Properties:
