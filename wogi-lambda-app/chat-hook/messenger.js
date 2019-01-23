@@ -1,7 +1,8 @@
-const dynamoose = require('dynamoose');
+const User = require('./user').User;
 
 exports.handler = async (event, context) => {
-  console.log("HANDLING MESSENGER")
+  console.log("EVENT PATH", event.path);
+  console.log("EVENT BODY", JSON.stringify(event.body));
 
   try {
     const Cat = dynamoose.model('Cat', { id: Number, name: String });

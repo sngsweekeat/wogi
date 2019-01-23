@@ -1,9 +1,5 @@
-
-const axios = require('axios')
 const messenger = require('./messenger');
 const telegram = require('./telegram');
-const url = 'http://checkip.amazonaws.com/';
-let response;
 
 /**
  *
@@ -39,7 +35,6 @@ let response;
  * @returns {Object} object.body - JSON Payload to be returned
  *
  */
-// require('dotenv').config();
 
 exports.lambdaHandler = async (event, context) => {
     switch (event.path) {

@@ -32,32 +32,8 @@
  * @returns {Object} object.body - JSON Payload to be returned
  *
  */
-const dynamoose = require('dynamoose');
 const uuidv4 = require('uuid/v4');
-
-const modelOptions = {
-    create: false,
-    update: true,
-};
-const userSchema = new dynamoose.Schema({
-    id: {
-        type: String,
-        hashKey: true,
-    },
-    otp: {
-        type: String,
-    },
-    platform: {
-        type: String,
-    },
-    chatId: {
-        type: String,
-    },
-}, {
-    timestamps: true,
-});
-
-const User = dynamoose.model('wogi-users', userSchema, modelOptions);
+const User = require('./user').User;
 
 const createUser = async (id) => {
     const otp = `WOGI-REG-${uuidv4()}`;
