@@ -119,10 +119,12 @@ const handleCallbackQuery = async (callbackQuery) => {
   const { optionSelected, messageDeliveryId } = JSON.parse(data);
   const chatId = from.id;
 
+  console.log('FETCHING MESSAGE DELIVERY');
   const messageDelivery = await MessageDelivery.get(messageDeliveryId);
 
   if (!messageDelivery) {
-    bot.sendMessage(chatId, `Something went wrong with handling the reply to the message: ${message.text}`);
+    const result = await bot.sendMessage(chatId, `Something went wrong with handling the reply to the message: ${message.text}`);
+    console.log('Telegram sendMessage result', result);
 
     return {
       statusCode: 200,
@@ -137,15 +139,17 @@ const handleCallbackQuery = async (callbackQuery) => {
   }
 
   if (messageDelivery.responseStatus && messageDelivery.responseStatus !== 'PENDING') {
-    bot.sendMessage(chatId, 'You have already responded to this option, don\'t guai lan:)');
+    const result = await bot.sendMessage(chatId, 'You have already responded to this option, don\'t guai lan:)');
+    console.log('Telegram sendMessage result', result);
     return {
       statusCode: 204,
     };
   }
-  bot.sendMessage(chatId, 'Thank you! Your response has been sent to the agency');
   messageDelivery.responseStatus = optionSelected;
-
   await messageDelivery.save();
+
+  const result = await bot.sendMessage(chatId, 'Thank you! Your response has been sent to the agency');
+  console.log('Telegram sendMessage result', result);
 
   return {
     statusCode: 204,
