@@ -48,6 +48,8 @@ exports.lambdaHandler = async (event) => {
         const chatId = messageDeliveryRecord.dynamodb.NewImage.chatId.S;
         const platform = messageDeliveryRecord.dynamodb.NewImage.platform.S;
         const message = messageDeliveryRecord.dynamodb.NewImage.message.S;
+        const messageTitle = messageDeliveryRecord.dynamodb.NewImage.messageTitle.S;
+        const agencyId = messageDeliveryRecord.dynamodb.NewImage.agencyId.S;
         const id = messageDeliveryRecord.dynamodb.NewImage.id.S;
         let options;
         if (messageDeliveryRecord.dynamodb.NewImage.options) {
@@ -59,7 +61,7 @@ exports.lambdaHandler = async (event) => {
           switch (platform) {
             case 'MESSENGER':
               deliveryStatus = await messenger.handler({
-                chatId, message, messageDeliveryId: id, options,
+                chatId, message, messageDeliveryId: id, options, messageTitle, agencyId,
               });
               break;
             case 'TELEGRAM':

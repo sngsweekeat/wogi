@@ -74,18 +74,18 @@ exports.lambdaHandler = async (event) => {
         const agencyId = record.dynamodb.NewImage.agencyId.S;
         const message = record.dynamodb.NewImage.message.S;
         const users = record.dynamodb.NewImage.users.SS;
+        const messageTitle = record.dynamodb.NewImage.messageTitle.S;
         let options;
         if (record.dynamodb.NewImage.options) {
           options = record.dynamodb.NewImage.options.SS;
         }
-
         const usersToMsg = await getUsers(users);
         if (usersToMsg) {
           for (const userRecord of usersToMsg) {
             console.log(`Saving message id ${messageId} for user ${userRecord.id}`);
             const { chatId, platform } = userRecord;
             await saveMessageDelivery({
-              userId: userRecord.id, chatId, agencyId, platform, message, messageId, deliveryStatus: 'PENDING', options, responseStatus: 'PENDING',
+              userId: userRecord.id, chatId, agencyId, messageTitle, platform, message, messageId, deliveryStatus: 'PENDING', options, responseStatus: 'PENDING',
             });
           }
         }
