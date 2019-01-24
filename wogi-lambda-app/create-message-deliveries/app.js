@@ -1,3 +1,5 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-restricted-syntax */
 
 /**
  *
@@ -34,70 +36,71 @@
  *
  */
 
-const uuidv1 = require("uuid/v1");
-const User = require("./user.model").User;
-const MessageDelivery = require("./message-delivery.model").MessageDelivery;
+const shortid = require('shortid');
+const User = require('./user.model').User;
+const MessageDelivery = require('./message-delivery.model').MessageDelivery;
+
 let response;
 
 const getUsers = (users) => {
-	console.log("Executing query for users: ", users);
-	return new Promise(function (resolve, reject) {
-		User.scan('id').in(users).exec(function (err, userList) {
-			console.log("Query executed...");
-			if (err) reject(err);
-			else resolve(userList);
-		});
-	});
-
-}
+  console.log('Executing query for users: ', users);
+  return new Promise(((resolve, reject) => {
+    User.scan('id').in(users).exec((err, userList) => {
+      console.log('Query executed...');
+      if (err) reject(err);
+      else resolve(userList);
+    });
+  }));
+};
 
 const saveMessageDelivery = (msgDelivery) => {
-	console.log("Saving MessageDelivery: ", msgDelivery);
-	return new Promise(function (resolve, reject) {
-		const msgDeliveryToSave = new MessageDelivery({ id: uuidv1(), ...msgDelivery });
+  console.log('Saving MessageDelivery: ', msgDelivery);
+  return new Promise(((resolve, reject) => {
+    const msgDeliveryToSave = new MessageDelivery({ id: shortid.generate(), ...msgDelivery });
 
-		msgDeliveryToSave.save(function (err) {
-			if (err) reject(err);
-			else resolve();
-		});
-	});
+    msgDeliveryToSave.save((err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  }));
+};
 
-}
+exports.lambdaHandler = async (event) => {
+  try {
+    for (const record of event.Records) {
+      console.log('Stream record: ', JSON.stringify(record, null, 2));
+      if (record.eventName === 'INSERT') {
+        const messageId = record.dynamodb.NewImage.id.S;
+        const agencyId = record.dynamodb.NewImage.agencyId.S;
+        const message = record.dynamodb.NewImage.message.S;
+        const users = record.dynamodb.NewImage.users.SS;
 
-exports.lambdaHandler = async (event, context) => {
-	try {
-		for (const record of event.Records) {
-			console.log('Stream record: ', JSON.stringify(record, null, 2));
-			if (record.eventName == 'INSERT') {
-				let messageId = record.dynamodb.NewImage.id.S;
-				let agencyId = record.dynamodb.NewImage.agencyId.S;
-				let message = record.dynamodb.NewImage.message.S;
-				let users = record.dynamodb.NewImage.users.SS;
+        const usersToMsg = await getUsers(users);
+        if (usersToMsg) {
+          for (const userRecord of usersToMsg) {
+            console.log(`Saving message id ${messageId} for user ${userRecord.id}`);
+            const { chatId, platform } = userRecord;
+            await saveMessageDelivery({
+              userId: userRecord.id, chatId, agencyId, platform, message, messageId, deliveryStatus: 'PENDING',
+            });
+          }
+        }
+      }
 
-				let usersToMsg = await getUsers(users);
-				if (usersToMsg) {
-					for (const userRecord of usersToMsg) {
-						console.log(`Saving message id ${messageId} for user ${userRecord.id}`);
-						const { chatId, platform } = userRecord;
-						await saveMessageDelivery({ userId: userRecord.id, chatId, platform, message, messageId, deliveryStatus: "PENDING" })
-					}
-				}
-			}
+      console.log('Complete processing for current stream record');
+    }
 
-			console.log("Complete processing for current stream record");
-		};
+    response = {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: `# of Message record processed: ${event.Records.length}`,
+        event,
+      }),
+    };
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
 
-		response = {
-			'statusCode': 200,
-			'body': JSON.stringify({
-				message: `# of Message record processed: ${event.Records.length}`,
-				event,
-			})
-		}
-	} catch (err) {
-		console.log(err);
-		return err;
-	}
-
-	return response
+  return response;
 };

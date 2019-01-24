@@ -11,6 +11,9 @@ const messageDeliverySchema = new dynamoose.Schema({
   chatId: {
     type: String,
   },
+  agencyId: {
+    type: String,
+  },
   platform: {
     type: String,
   },
