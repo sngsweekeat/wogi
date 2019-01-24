@@ -1,13 +1,52 @@
 const axios = require("axios");
 
 exports.handler = async (chatId, message) => {
-  let msg = {
-    "text": message
-  }
-  console.log("Sending message through messenger...");
-  result = await callMessengerSendAPI(chatId, msg);
-  deliveryStatus = "SUCCESS";
-  console.log("Messenger result is: ", result);
+	try {
+
+		let msg = {
+			"text": message
+		}
+		let msgWithButton = msg = {
+			"attachment": {
+				"type": "template",
+				"payload": {
+					"template_type": "button",
+					"text": message,
+					"buttons": [
+						{
+							"type": "postback",
+							"title": "Yes",
+							"payload": "{ messageDeliveryId, optionValue: \"Yes\" }"
+						},
+						{
+							"type": "postback",
+							"title": "No",
+							"payload": "{ messageDeliveryId, optionValue: \"Yes\" }"
+						},
+						{
+							"type": "postback",
+							"title": "Don't bother me",
+							"payload": "{ messageDeliveryId, optionValue: \"Yes\" }"
+						}
+					]
+				}
+			}
+		}
+		console.log("Sending message through messenger...");
+		result = await callMessengerSendAPI(chatId, msgWithButton);
+		deliveryStatus = "SUCCESS";
+		console.log("Messenger result is: ", result);
+		return deliveryStatus;
+	}
+	catch (e) {
+		console.log('error is: ', e);
+		if (e.response.status >= 400 && e.response.status < 500) {
+			deliveryStatus = "FAIL";
+		}
+		else {
+			throw e;
+		}
+	}
 
 }
 

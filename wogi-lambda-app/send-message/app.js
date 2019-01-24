@@ -61,14 +61,6 @@ exports.lambdaHandler = async (event, context) => {
 							console.err('Invalid platform specified');
 							return;
 					}
-				} catch (e) {
-					console.log('error is: ', e);
-					if (e.response.status >= 400 && e.response.status < 500) {
-						deliveryStatus = "FAIL";
-					}
-					else {
-						throw e;
-					}
 				}
 				finally {
 					if (!!deliveryStatus) {
