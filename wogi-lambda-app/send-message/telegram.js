@@ -6,14 +6,19 @@ exports.handler = async ({
   messageDeliveryId, chatId, message, options, messageTitle, agencyId,
 }) => {
   try {
-    const keyboardButtons = options.map(option => ({
-      text: option,
-      callback_data: JSON.stringify({ optionSelected: option, messageDeliveryId }),
-    }));
+    let keyboardButtons;
+    if (options) {
+      keyboardButtons = options.map(option => ({
+        text: option,
+        callback_data: JSON.stringify({ optionSelected: option, messageDeliveryId }),
+      }));
+    }
     const sendMessageOptions = {
-      reply_markup: {
-        inline_keyboard: [keyboardButtons],
-      },
+      ...(keyboardButtons ? {
+        reply_markup: {
+          inline_keyboard: [keyboardButtons],
+        },
+      } : {}),
       parse_mode: 'HTML',
     };
     const finalMessage = `<i>From agency: ${agencyId}</i>\n<b>${messageTitle}</b>\n\n${message}`;
