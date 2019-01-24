@@ -59,7 +59,7 @@ exports.lambdaHandler = async (event) => {
     return {
       statusCode: 200,
       body: {
-        message: 'The message has been created, sent.',
+        message: 'The message has been created, sending agency reponse.',
       },
     };
   } catch (err) {
