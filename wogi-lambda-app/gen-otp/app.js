@@ -50,6 +50,10 @@ exports.lambdaHandler = async (event, context) => {
         const response = {
             headers: {
                 "Access-Control-Allow-Origin": "*", // Required for CORS support to work                
+                "Access-Control-Request-Headers": "Content-Type",
+                "Access-Control-Allow-Methods": "POST, GET, OPTIONS, DELETE",
+                "Access-Control-Allow-Headers": "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With",
+                "Content-Type": "application/json",
             },
             statusCode: 200,
             body: JSON.stringify({
