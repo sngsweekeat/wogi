@@ -18,12 +18,13 @@ const callMessengerSendAPI = async (chatId, message) => {
 };
 
 
-exports.handler = async (chatId, message) => {
+exports.handler = async (chatId, message, messageDeliveryId) => {
   let deliveryStatus;
   try {
-    // const msg = {
-    //   text: message,
-    // };
+    const payload = {
+      messageDeliveryId,
+      optionValue: 'Yes',
+    };
     const msgWithButton = {
       attachment: {
         type: 'template',
@@ -34,17 +35,17 @@ exports.handler = async (chatId, message) => {
             {
               type: 'postback',
               title: 'Yes',
-              payload: '{ messageDeliveryId, optionValue: "Yes" }',
+              payload,
             },
             {
               type: 'postback',
               title: 'No',
-              payload: '{ messageDeliveryId, optionValue: "Yes" }',
+              payload,
             },
             {
               type: 'postback',
               title: "Don't bother me",
-              payload: '{ messageDeliveryId, optionValue: "Yes" }',
+              payload,
             },
           ],
         },

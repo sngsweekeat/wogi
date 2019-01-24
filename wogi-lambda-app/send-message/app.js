@@ -54,7 +54,7 @@ exports.lambdaHandler = async (event) => {
         try {
           switch (platform) {
             case 'MESSENGER':
-              deliveryStatus = await messenger.handler(chatId, message);
+              deliveryStatus = await messenger.handler(chatId, message, id);
               break;
             case 'TELEGRAM':
               deliveryStatus = await telegram.handler(chatId, message);

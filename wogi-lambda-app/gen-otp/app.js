@@ -33,30 +33,29 @@
  *
  */
 const uuidv4 = require('uuid/v4');
-const User = require('./user').User;
+const { User } = require('./user');
 
 const createUser = async (id) => {
-    const otp = `WOGI-REG-${uuidv4()}`;
-    return await User.create({
-        id,
-        otp,
-    });
-}
+  const otp = `WOGI-REG-${uuidv4()}`;
+  return User.create({
+    id,
+    otp,
+  });
+};
 
 exports.lambdaHandler = async (event, context) => {
-    try {
-        const { id } = event.queryStringParameters;
-        const user = await createUser(id);
-        response = {
-            'statusCode': 200,
-            'body': JSON.stringify({
-                otp: user.otp,
-            })
-        }
-    } catch (err) {
-        console.log(err);
-        return err;
-    }
-
-    return response
+  try {
+    const { id } = event.queryStringParameters;
+    const user = await createUser(id);
+    const response = {
+      statusCode: 200,
+      body: JSON.stringify({
+        otp: user.otp,
+      }),
+    };
+    return response;
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
 };

@@ -44,17 +44,16 @@ const isValidOtp = messageText => messageText.match(/^WOGI-REG.*/);
 exports.postHandler = async (event, context) => {
   const body = JSON.parse(event.body);
   const messaging = body.entry[0].messaging[0];
-
-  if (!messaging.message.text) {
-    return {
-      statusCode: 204,
-    };
-  }
-
-  if (messaging.message && messaging.message.text) {
+  if (messaging.message) {
+    if (!messaging.message.text) {
+      return {
+        statusCode: 204,
+      };
+    }
     return handleOtpText(messaging);
   }
-  if (messaging.message && messaging.postback) {
+
+  if (messaging.postback) {
     const chatId = messaging.sender.id;
     return handlePostback(chatId, JSON.parse(messaging.postback));
   }
