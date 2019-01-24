@@ -6,6 +6,7 @@ Globals:
     Api:
         BinaryMediaTypes:
             - "*~1*"
+        Cors: "'*'"
 
 Resources:
   GenOTP:
@@ -23,7 +24,6 @@ Resources:
             # nric will be passed through query params
             Path: /user/otp
             Method: get
-            Cors: true
 
   ChatHook:
     Type: AWS::Serverless::Function
