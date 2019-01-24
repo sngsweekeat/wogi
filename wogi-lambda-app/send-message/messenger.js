@@ -21,10 +21,10 @@ const callMessengerSendAPI = async (chatId, message) => {
 exports.handler = async (chatId, message, messageDeliveryId) => {
   let deliveryStatus;
   try {
-    const payload = {
+    const payload = JSON.stringify({
       messageDeliveryId,
       optionValue: 'Yes',
-    };
+    });
     const msgWithButton = {
       attachment: {
         type: 'template',
