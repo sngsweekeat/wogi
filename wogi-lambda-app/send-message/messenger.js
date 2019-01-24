@@ -44,16 +44,19 @@ const createMessageWithOptions = (messageDeliveryId, text, options) => {
 
 const createMessageWithText = text => ({ text });
 
+const constructMessageText = ({ message, messageTitle, agencyId }) => `[${agencyId}]\n\n*${messageTitle}*\n\n${message}`;
+
 exports.handler = async ({
-  chatId, message, messageDeliveryId, options,
+  chatId, message, messageDeliveryId, options, messageTitle, agencyId,
 }) => {
   let deliveryStatus;
   try {
+    const messageText = constructMessageText({ message, messageTitle, agencyId });
     let messageToSend;
     if (options) {
-      messageToSend = createMessageWithOptions(messageDeliveryId, message, options);
+      messageToSend = createMessageWithOptions(messageDeliveryId, messageText, options);
     } else {
-      messageToSend = createMessageWithText(message);
+      messageToSend = createMessageWithText(messageText);
     }
 
     console.log('Sending message through messenger...');
