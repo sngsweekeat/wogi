@@ -23,7 +23,7 @@ exports.handler = async (chatId, message, messageDeliveryId) => {
   try {
     const payload = JSON.stringify({
       messageDeliveryId,
-      optionValue: 'Yes',
+      optionSelected: 'Yes',
     });
     const msgWithButton = {
       attachment: {

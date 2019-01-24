@@ -52,16 +52,17 @@ exports.postHandler = async (event, context) => {
     }
     return handleOtpText(messaging);
   }
-
+  console.log('---- MESSAGING: ', messaging);
   if (messaging.postback) {
     const chatId = messaging.sender.id;
-    return handlePostback(chatId, JSON.parse(messaging.postback));
+    const payload = JSON.parse(messaging.postback.payload);
+    return handlePostback(chatId, payload);
   }
 };
 
-const handlePostback = async (chatId, postback) => {
-  const { messsageDeliveryId, optionSelected } = postback.payload;
-  const messageDeliveryItem = await MessageDelivery.queryOne('id').eq(messsageDeliveryId).exec();
+const handlePostback = async (chatId, payload) => {
+  const { messageDeliveryId, optionSelected } = payload;
+  const messageDeliveryItem = await MessageDelivery.queryOne('id').eq(messageDeliveryId).exec();
   if (messageDeliveryItem.responseStatus && messageDeliveryItem.responseStatus !== 'PENDING') {
     await callMessengerSendAPI(chatId, 'You have already responded to this option, don\'t guai lan:)');
     return {
@@ -70,6 +71,7 @@ const handlePostback = async (chatId, postback) => {
     };
   }
   messageDeliveryItem.responseStatus = optionSelected;
+  console.log(messageDeliveryItem);
   await messageDeliveryItem.save();
   await callMessengerSendAPI(chatId, 'Thank you! Your response has been sent to the agency');
   return {
