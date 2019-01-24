@@ -32,7 +32,8 @@
  * @returns {Object} object.body - JSON Payload to be returned
  *
  */
-
+const messenger = require("./messenger");
+const telegram = require("./telegram");
 const MessageDelivery = require("./message-delivery.model").MessageDelivery;
 
 const updateMessageDeliveryStatus = async (messageDeliveryId, deliveryStatus) => {
