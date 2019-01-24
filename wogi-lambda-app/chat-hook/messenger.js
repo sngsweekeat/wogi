@@ -60,6 +60,11 @@ exports.postHandler = async (event, context) => {
   }
 };
 
+
+const AGENCY_CALLBACK_URL = 'https://wogi.dcube.cf/mockAgency/hook';
+
+const callAgencyCallback = messageDeliveryItem => axios.post(AGENCY_CALLBACK_URL, messageDeliveryItem);
+
 const handlePostback = async (chatId, payload) => {
   const { messageDeliveryId, optionSelected } = payload;
   const messageDeliveryItem = await MessageDelivery.queryOne('id').eq(messageDeliveryId).exec();
@@ -74,6 +79,7 @@ const handlePostback = async (chatId, payload) => {
   console.log(messageDeliveryItem);
   await messageDeliveryItem.save();
   await callMessengerSendAPI(chatId, 'Thank you! Your response has been sent to the agency');
+  await callAgencyCallback(messageDeliveryItem);
   return {
     statusCode: 200,
     body: JSON.stringify({ message: 'response handled and saved' }),

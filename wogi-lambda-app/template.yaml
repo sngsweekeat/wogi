@@ -25,6 +25,20 @@ Resources:
             Path: /user/otp
             Method: get
 
+  MockAgency:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: nodejs8.10
+      CodeUri: mock-agency/
+      Timeout: 30
+      Events:
+        GetApi:
+          Type: Api
+          Properties:
+            Path: /mockAgency/hook
+            Method: post
+
   ChatHook:
     Type: AWS::Serverless::Function
     Properties:
