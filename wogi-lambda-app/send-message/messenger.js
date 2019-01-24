@@ -44,7 +44,7 @@ const createMessageWithOptions = (messageDeliveryId, text, options) => {
 
 const createMessageWithText = text => ({ text });
 
-const constructMessageText = ({ message, messageTitle, agencyId }) => `[${agencyId}]\n\n*${messageTitle}*\n\n${message}`;
+const constructMessageText = ({ message, messageTitle, agencyId }) => `_From agency: ${agencyId}_\n*${messageTitle}*\n\n${message}`;
 
 exports.handler = async ({
   chatId, message, messageDeliveryId, options, messageTitle, agencyId,
