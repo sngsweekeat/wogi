@@ -64,7 +64,7 @@ const handlePostback = async (chatId, payload) => {
   const { messageDeliveryId, optionSelected } = payload;
   const messageDeliveryItem = await MessageDelivery.queryOne('id').eq(messageDeliveryId).exec();
   if (messageDeliveryItem.responseStatus && messageDeliveryItem.responseStatus !== 'PENDING') {
-    await callMessengerSendAPI(chatId, 'You have already responded to this option, don\'t guai lan:)');
+    await callMessengerSendAPI(chatId, 'You have already responded to this option');
     return {
       statusCode: 200,
       body: JSON.stringify({ message: 'response already handled, not handling again' }),
