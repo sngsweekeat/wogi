@@ -26,6 +26,9 @@ const messageDeliverySchema = new dynamoose.Schema({
   messageId: {
     type: String,
   },
+  options: {
+    type: [String],
+  },
 });
 const options = {
   create: false, // Create table in DB, if it does not exist,

@@ -42,19 +42,25 @@ const updateMessageDeliveryStatus = async (messageDeliveryId, deliveryStatus) =>
 
 exports.lambdaHandler = async (event) => {
   try {
-    for (const record of event.Records) {
-      console.log('Stream record: ', JSON.stringify(record, null, 2));
-      if (record.eventName === 'INSERT') {
-        const chatId = record.dynamodb.NewImage.chatId.S;
-        const platform = record.dynamodb.NewImage.platform.S;
-        const message = record.dynamodb.NewImage.message.S;
-        const id = record.dynamodb.NewImage.id.S;
+    for (const messageDeliveryRecord of event.Records) {
+      console.log('Stream record: ', JSON.stringify(messageDeliveryRecord, null, 2));
+      if (messageDeliveryRecord.eventName === 'INSERT') {
+        const chatId = messageDeliveryRecord.dynamodb.NewImage.chatId.S;
+        const platform = messageDeliveryRecord.dynamodb.NewImage.platform.S;
+        const message = messageDeliveryRecord.dynamodb.NewImage.message.S;
+        const id = messageDeliveryRecord.dynamodb.NewImage.id.S;
+        let options;
+        if (messageDeliveryRecord.dynamodb.NewImage.options) {
+          options = messageDeliveryRecord.dynamodb.NewImage.options.SS;
+        }
         let deliveryStatus;
 
         try {
           switch (platform) {
             case 'MESSENGER':
-              deliveryStatus = await messenger.handler(chatId, message, id);
+              deliveryStatus = await messenger.handler({
+                chatId, message, messageDeliveryId: id, options,
+              });
               break;
             case 'TELEGRAM':
               deliveryStatus = await telegram.handler(id, chatId, message);

@@ -37,8 +37,8 @@
  */
 
 const shortid = require('shortid');
-const User = require('./user.model').User;
-const MessageDelivery = require('./message-delivery.model').MessageDelivery;
+const { User } = require('./user.model');
+const { MessageDelivery } = require('./message-delivery.model');
 
 let response;
 
@@ -74,6 +74,10 @@ exports.lambdaHandler = async (event) => {
         const agencyId = record.dynamodb.NewImage.agencyId.S;
         const message = record.dynamodb.NewImage.message.S;
         const users = record.dynamodb.NewImage.users.SS;
+        let options;
+        if (record.dynamodb.NewImage.options) {
+          options = record.dynamodb.NewImage.options.SS;
+        }
 
         const usersToMsg = await getUsers(users);
         if (usersToMsg) {
@@ -81,7 +85,7 @@ exports.lambdaHandler = async (event) => {
             console.log(`Saving message id ${messageId} for user ${userRecord.id}`);
             const { chatId, platform } = userRecord;
             await saveMessageDelivery({
-              userId: userRecord.id, chatId, agencyId, platform, message, messageId, deliveryStatus: 'PENDING',
+              userId: userRecord.id, chatId, agencyId, platform, message, messageId, deliveryStatus: 'PENDING', options, responseStatus: 'PENDING',
             });
           }
         }

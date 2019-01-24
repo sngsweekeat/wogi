@@ -17,42 +17,47 @@ const callMessengerSendAPI = async (chatId, message) => {
   return response;
 };
 
+const createMessageWithOptions = (messageDeliveryId, text, options) => {
+  const buttons = options.map((option) => {
+    const button = {
+      type: 'postback',
+      title: option,
+      payload: JSON.stringify({
+        messageDeliveryId,
+        optionSelected: option,
+      }),
+    };
+    return button;
+  });
+  const msgWithButton = {
+    attachment: {
+      type: 'template',
+      payload: {
+        template_type: 'button',
+        text,
+        buttons,
+      },
+    },
+  };
+  return msgWithButton;
+};
 
-exports.handler = async (chatId, message, messageDeliveryId) => {
+const createMessageWithText = text => ({ text });
+
+exports.handler = async ({
+  chatId, message, messageDeliveryId, options,
+}) => {
   let deliveryStatus;
   try {
-    const payload = JSON.stringify({
-      messageDeliveryId,
-      optionSelected: 'Yes',
-    });
-    const msgWithButton = {
-      attachment: {
-        type: 'template',
-        payload: {
-          template_type: 'button',
-          text: message,
-          buttons: [
-            {
-              type: 'postback',
-              title: 'Yes',
-              payload,
-            },
-            {
-              type: 'postback',
-              title: 'No',
-              payload,
-            },
-            {
-              type: 'postback',
-              title: "Don't bother me",
-              payload,
-            },
-          ],
-        },
-      },
-    };
+    let messageToSend;
+    if (options) {
+      messageToSend = createMessageWithOptions(messageDeliveryId, message, options);
+    } else {
+      messageToSend = createMessageWithText(message);
+    }
+
     console.log('Sending message through messenger...');
-    const result = await callMessengerSendAPI(chatId, msgWithButton);
+    const result = await callMessengerSendAPI(chatId, messageToSend);
     deliveryStatus = 'SUCCESS';
     console.log('Messenger result is: ', result);
     return deliveryStatus;
