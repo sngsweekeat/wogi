@@ -1,7 +1,6 @@
 const axios = require("axios");
 
 exports.handler = async (chatId, message) => {
-  await messenger.handler();
   let msg = {
     "text": message
   }
