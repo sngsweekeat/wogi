@@ -65,7 +65,9 @@ exports.lambdaHandler = async (event) => {
               });
               break;
             case 'TELEGRAM':
-              deliveryStatus = await telegram.handler(id, chatId, message);
+              deliveryStatus = await telegram.handler({
+                chatId, message, messageDeliveryId: id, options, messageTitle, agencyId,
+              });
               break;
             default:
               console.err('Invalid platform specified');
