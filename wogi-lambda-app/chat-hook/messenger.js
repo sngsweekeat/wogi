@@ -1,5 +1,7 @@
-const User = require('./user').User;
+/* eslint-disable no-use-before-define */
 const axios = require('axios');
+const { User } = require('./user');
+const { MessageDelivery } = require('./message-delivery.model');
 
 exports.getHandler = async (event, context) => {
   const challenge = event.queryStringParameters['hub.challenge'];
@@ -8,22 +10,22 @@ exports.getHandler = async (event, context) => {
     statusCode: 200,
     body: challenge,
   };
-}
+};
 
 // event.body looks something like this:
 // {
 //   "object": "page",
 //   "entry": [
-//       {
-//           "id": "303476453638501",
-//           "time": 1548234181533,
-//           "messaging": [
-//               {
-//                   "sender": {
-//                       "id": "<sender-id>"
-//                   },
-//                   "recipient": {
-//                       "id": "<recipient-id>"
+//   {
+//   "id": "303476453638501",
+//   "time": 1548234181533,
+//   "messaging": [
+//   {
+//   "sender": {
+//   "id": "<sender-id>"
+//   },
+//   "recipient": {
+//                   "id": "<recipient-id>"
 //                   },
 //                   "timestamp": 1548234181191,
 //                   "message": {
@@ -37,28 +39,59 @@ exports.getHandler = async (event, context) => {
 //   ]
 // }
 
+const isValidOtp = messageText => messageText.match(/^WOGI-REG.*/);
+
 exports.postHandler = async (event, context) => {
+  const body = JSON.parse(event.body);
+  const messaging = body.entry[0].messaging[0];
+
+  if (!messaging.message.text) {
+    return {
+      statusCode: 204,
+    };
+  }
+
+  if (messaging.message && messaging.message.text) {
+    return handleOtpText(messaging);
+  }
+  if (messaging.message && messaging.postback) {
+    const chatId = messaging.sender.id;
+    return handlePostback(chatId, JSON.parse(messaging.postback));
+  }
+};
+
+const handlePostback = async (chatId, postback) => {
+  const { messsageDeliveryId, optionSelected } = postback.payload;
+  const messageDeliveryItem = await MessageDelivery.queryOne('id').eq(messsageDeliveryId).exec();
+  if (messageDeliveryItem.responseStatus !== 'PENDING') {
+    await callMessengerSendAPI(chatId, 'You have already responded to this option, don\'t guai lan:)');
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: 'response already handled, not handling again' }),
+    };
+  }
+  messageDeliveryItem.responseStatus = optionSelected;
+  await messageDeliveryItem.save();
+  await callMessengerSendAPI(chatId, 'Thank you! Your response has been sent to the agency');
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ message: 'response handled and saved' }),
+  };
+};
+
+const handleOtpText = async (messaging) => {
   try {
-    const body = JSON.parse(event.body)
-    const messaging = body.entry[0].messaging[0];
-
-    if (!messaging.message.text) {
-      return {
-        statusCode: 204,
-      };
-    }
-
     const messageText = messaging.message.text;
     const chatId = messaging.sender.id;
 
     if (!isValidOtp(messageText)) {
-      const response = await callMessengerSendAPI(chatId, "Please enter a valid OTP to register.");
+      callMessengerSendAPI(chatId, 'Please enter a valid OTP to register.');
       return {
         statusCode: 200,
         body: JSON.stringify({
           errors: [
             {
-              message: "Invalid OTP given",
+              message: 'Invalid OTP given',
             },
           ],
         }),
@@ -76,21 +109,21 @@ exports.postHandler = async (event, context) => {
         body: JSON.stringify({
           errors: [
             {
-              message: 'Could not find a user associated with the given OTP.'
-            }
-          ]
-        })
-      }
+              message: 'Could not find a user associated with the given OTP.',
+            },
+          ],
+        }),
+      };
     }
 
-    user.platform = "MESSENGER";
+    user.platform = 'MESSENGER';
     user.chatId = chatId;
-    await user.save()
-    await callMessengerSendAPI(chatId, "You have successfully registered with Wogi on Facebook Messenger!");
+    await user.save();
+    await callMessengerSendAPI(chatId, 'You have successfully registered with Wogi on Facebook Messenger!');
 
     return {
       statusCode: 204,
-    }
+    };
   } catch (e) {
     return {
       statusCode: 200,
@@ -101,30 +134,28 @@ exports.postHandler = async (event, context) => {
           },
         ],
       }),
-    }
+    };
   }
-}
+};
 
-const isValidOtp = (messageText) => {
-  return messageText.match(/^WOGI-REG.*/);
-}
 
-const FB_MESSENGER_URL = "https://graph.facebook.com/v2.6/me/messages";
+const FB_MESSENGER_URL = 'https://graph.facebook.com/v2.6/me/messages';
 
 const callMessengerSendAPI = async (chatId, message) => {
-  console.log("callMessengerSendAPI...");
+  console.log('callMessengerSendAPI...');
   // Construct the message body
   const body = {
-    "recipient": {
-      "id": chatId,
+    recipient: {
+      id: chatId,
     },
-    "message":  { text: message },
-  }
-  const params = { "access_token": process.env.PAGE_ACCESS_TOKEN };
+    message: { text: message },
+  };
+  const params = { access_token: process.env.PAGE_ACCESS_TOKEN };
   try {
-    const response = await axios.post(FB_MESSENGER_URL,body,{params});
+    const response = await axios.post(FB_MESSENGER_URL, body, { params });
     return response;
-  } catch(e) {
-    console.log("Error while calling Messenger Send API", e);
+  } catch (e) {
+    console.log('Error while calling Messenger Send API', e);
+    return null;
   }
-}
+};

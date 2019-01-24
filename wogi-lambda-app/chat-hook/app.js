@@ -37,17 +37,17 @@ const telegram = require('./telegram');
  */
 
 exports.lambdaHandler = async (event, context) => {
-    switch (event.path) {
-        case '/telegram/hook':
-            return await telegram.handler(event, context);
-        case '/messenger/hook':
-            return event.httpMethod === 'GET' ?
-                messenger.getHandler(event, context) :
-                messenger.postHandler(event, context);
-        default:
-            return {
-                statusCode: 404,
-                body: 'Not found'
-            };
-    }
+  switch (event.path) {
+    case '/telegram/hook':
+      return telegram.handler(event, context);
+    case '/messenger/hook':
+      return event.httpMethod === 'GET'
+        ? messenger.getHandler(event, context)
+        : messenger.postHandler(event, context);
+    default:
+      return {
+        statusCode: 404,
+        body: 'Not found',
+      };
+  }
 };
