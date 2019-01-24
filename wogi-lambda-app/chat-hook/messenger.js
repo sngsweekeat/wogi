@@ -41,7 +41,7 @@ exports.getHandler = async (event, context) => {
 
 const isValidOtp = messageText => messageText.match(/^WOGI-REG.*/);
 
-exports.postHandler = async (event, context) => {
+exports.postHandler = async (event) => {
   const body = JSON.parse(event.body);
   const messaging = body.entry[0].messaging[0];
   if (messaging.message) {
@@ -58,8 +58,8 @@ exports.postHandler = async (event, context) => {
     const payload = JSON.parse(messaging.postback.payload);
     return handlePostback(chatId, payload);
   }
+  return null;
 };
-
 
 const AGENCY_CALLBACK_URL = 'https://wogi.dcube.cf/mockAgency/hook';
 
