@@ -35,7 +35,11 @@ const messageDeliverySchema = new dynamoose.Schema({
   options: {
     type: [String],
   },
-});
+},
+{
+  timestamps: true,
+}
+);
 const options = {
   create: false, // Create table in DB, if it does not exist,
   update: true, // Update remote indexes if they do not match local index structure

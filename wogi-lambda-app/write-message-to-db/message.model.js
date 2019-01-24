@@ -25,6 +25,8 @@ const messageSchema = new dynamoose.Schema({
   options: {
     type: [String],
   },
+}, {
+  timestamps: true,
 });
 
 exports.Message = dynamoose.model('wogi-messages', messageSchema, options);
