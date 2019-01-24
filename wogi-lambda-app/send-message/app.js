@@ -1,4 +1,3 @@
-
 /**
  *
  * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
@@ -34,43 +33,7 @@
  *
  */
 
-const TelegramBot = require('node-telegram-bot-api');
 const MessageDelivery = require("./message-delivery.model").MessageDelivery;
-const axios = require("axios");
-const token = process.env.TELEGRAM_TOKEN;
-
-
-const bot = new TelegramBot(token);
-
-const saveMessageDelivery = (msgDelivery) => {
-	console.log("Saving MessageDelivery: ", msgDelivery);
-	return new Promise(function (resolve, reject) {
-		const msgDeliveryToSave = new MessageDelivery({ id: uuidv1(), ...msgDelivery });
-
-		msgDeliveryToSave.save(function (err) {
-			if (err) reject(err);
-			else resolve();
-		});
-	});
-
-}
-
-const FB_MESSENGER_URL = "https://graph.facebook.com/v2.6/me/messages";
-
-const callMessengerSendAPI = async (sender_psid, message) => {
-	console.log("callMessengerSendAPI...");
-	// Construct the message body
-	const body = {
-		"recipient": {
-			"id": sender_psid
-		},
-		"message": message
-	}
-	const params = { "access_token": process.env.PAGE_ACCESS_TOKEN };
-	// Send the HTTP request to the Messenger Platform
-	const response = await axios.post(FB_MESSENGER_URL, body, { params });
-	return response;
-}
 
 const updateMessageDeliveryStatus = async (messageDeliveryId, deliveryStatus) => {
 	return MessageDelivery.update(messageDeliveryId, { deliveryStatus })
@@ -85,39 +48,25 @@ exports.lambdaHandler = async (event, context) => {
 				const platform = record.dynamodb.NewImage.platform.S;
 				const message = record.dynamodb.NewImage.message.S;
 				const id = record.dynamodb.NewImage.id.S;
-				let result;
 				let deliveryStatus;
+
 				try {
-					if (platform == "MESSENGER") {
-						let msg = {
-							"text": message
-						}
-						console.log("Sending message through messenger...");
-						result = await callMessengerSendAPI(chatId, msg);
-						deliveryStatus = "SUCCESS";
-						console.log("result is: ", result);
-					}
-					if (platform == "TELEGRAM") {
-						result = await bot.sendMessage(chatId, message);
-						deliveryStatus = "SUCCESS";
-						console.log("result is: ", result);
+					switch (platform) {
+						case 'MESSENGER':
+							deliveryStatus = await messenger.handler(chatId, message);
+						case 'TELEGRAM':
+							deliveryStatus = await telegram.handler(chatId, message);
+						default:
+							console.err('Invalid platform specified');
+							return;
 					}
 				} catch (e) {
 					console.log('error is: ', e);
-					if (platform === "MESSENGER") {
-						if (e.response.status >= 400 && e.response.status < 500) {
-							deliveryStatus = "FAIL";
-						}
-						else {
-							throw e;
-						}
-					} else if (platform === "TELEGRAM") {
-						if (e.response.statusCode >= 400 && e.response.statusCode < 500) {
-							deliveryStatus = "FAIL";
-						}
-						else {
-							throw e;
-						}
+					if (e.response.status >= 400 && e.response.status < 500) {
+						deliveryStatus = "FAIL";
+					}
+					else {
+						throw e;
 					}
 				}
 				finally {
@@ -125,12 +74,6 @@ exports.lambdaHandler = async (event, context) => {
 						await updateMessageDeliveryStatus(id, deliveryStatus);
 					}
 				}
-				// call send message for platform
-				// wait for response from sendMessage
-				// if 200, update MessageDelivery deliveryStatus to true
-				// if >=400, throw error, AWS lambda will auto retry with the same stream event (?)
-				// exit
-
 			}
 			console.log("Complete processing for current stream record");
 		};
