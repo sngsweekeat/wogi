@@ -4,15 +4,11 @@ const bot = new TelegramBot(process.env.TELEGRAM_TOKEN);
 
 exports.handler = async (messageDeliveryId, chatId, message) => {
   try {
-    const callbackData = {
-      optionSelected: 'Yes',
-      messageDeliveryId,
-    };
     const options = {
       reply_markup: {
         inline_keyboard: [[
-          { text: 'Yes', callback_data: JSON.stringify(callbackData) },
-          { text: 'No', callback_data: JSON.stringify(callbackData) },
+          { text: 'Yes', callback_data: JSON.stringify({ optionSelected: 'Yes', messageDeliveryId }) },
+          { text: 'No', callback_data: JSON.stringify({ optionSelected: 'No', messageDeliveryId }) },
         ]],
       },
     };
