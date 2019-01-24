@@ -1,3 +1,5 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-restricted-syntax */
 /**
  *
  * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
@@ -32,50 +34,45 @@
  * @returns {Object} object.body - JSON Payload to be returned
  *
  */
-const messenger = require("./messenger");
-const telegram = require("./telegram");
-const MessageDelivery = require("./message-delivery.model").MessageDelivery;
+const messenger = require('./messenger');
+const telegram = require('./telegram');
+const { MessageDelivery } = require('./message-delivery.model');
 
-const updateMessageDeliveryStatus = async (messageDeliveryId, deliveryStatus) => {
-	return MessageDelivery.update(messageDeliveryId, { deliveryStatus })
-}
+const updateMessageDeliveryStatus = async (messageDeliveryId, deliveryStatus) => MessageDelivery.update(messageDeliveryId, { deliveryStatus });
 
-exports.lambdaHandler = async (event, context) => {
-	try {
-		for (const record of event.Records) {
-			console.log('Stream record: ', JSON.stringify(record, null, 2));
-			if (record.eventName == 'INSERT') {
-				const chatId = record.dynamodb.NewImage.chatId.S;
-				const platform = record.dynamodb.NewImage.platform.S;
-				const message = record.dynamodb.NewImage.message.S;
-				const id = record.dynamodb.NewImage.id.S;
-				let deliveryStatus;
+exports.lambdaHandler = async (event) => {
+  try {
+    for (const record of event.Records) {
+      console.log('Stream record: ', JSON.stringify(record, null, 2));
+      if (record.eventName === 'INSERT') {
+        const chatId = record.dynamodb.NewImage.chatId.S;
+        const platform = record.dynamodb.NewImage.platform.S;
+        const message = record.dynamodb.NewImage.message.S;
+        const id = record.dynamodb.NewImage.id.S;
+        let deliveryStatus;
 
-				try {
-					switch (platform) {
-						case 'MESSENGER':
-							deliveryStatus = await messenger.handler(chatId, message);
-						case 'TELEGRAM':
-							deliveryStatus = await telegram.handler(chatId, message);
-						default:
-							console.err('Invalid platform specified');
-							return;
-					}
-				}
-				finally {
-					if (!!deliveryStatus) {
-						await updateMessageDeliveryStatus(id, deliveryStatus);
-					}
-				}
-			}
-			console.log("Complete processing for current stream record");
-		};
-		console.log("Complete processing all stream records");
-	} catch (err) {
-		console.log(err);
-		return err;
-	}
-
-	return "success";
+        try {
+          switch (platform) {
+            case 'MESSENGER':
+              deliveryStatus = await messenger.handler(chatId, message);
+              break;
+            case 'TELEGRAM':
+              deliveryStatus = await telegram.handler(chatId, message);
+              break;
+            default:
+              console.err('Invalid platform specified');
+              return;
+          }
+        } finally {
+          if (deliveryStatus) {
+            await updateMessageDeliveryStatus(id, deliveryStatus);
+          }
+        }
+      }
+      console.log('Complete processing for current stream record');
+    }
+    console.log('Complete processing all stream records');
+  } catch (err) {
+    console.log(err);
+  }
 };
-
