@@ -33,48 +33,47 @@
  * @returns {Object} object.body - JSON Payload to be returned
  *
  */
-const Message = require("./message.model").Message
-const uuidv1 = require("uuid/v1");
-const base64 = require("base-64");
-const isBase64 = require("is-base64");
+const shortid = require('shortid');
+const base64 = require('base-64');
+const isBase64 = require('is-base64');
+const { Message } = require('./message.model');
 
 const saveMessage = (message) => {
-	console.log("message is: ", message);
-	return new Promise((resolve, reject) => {
-		const messageToSave = new Message({ id: uuidv1(), ...message });
+  console.log('message is: ', message);
+  return new Promise((resolve, reject) => {
+    const messageToSave = new Message({ id: shortid.generate(), ...message });
 
-		messageToSave.save(function (err) {
-			if (err) { reject(err); }
-			resolve();
-		});
-	});
-}
+    messageToSave.save((err) => {
+      if (err) { reject(err); }
+      resolve();
+    });
+  });
+};
 
-exports.lambdaHandler = async (event, context) => {
-	try {
-		const { body } = event;
-		console.log("Incoming body is: ", body);
-		let message;
-		if (typeof body === "string") {
-			if (isBase64(body)) {
-				message = JSON.parse(base64.decode(body));
-			} else {
-				message = JSON.parse(body);
-			}
-		} else {
-			message = body;
-		}
-		await saveMessage(message);
-		const response = {
-			'statusCode': 200,
-			'body': JSON.stringify({
-				message,
-			})
-		}
-		return response;
-	} catch (err) {
-		console.log(err);
-		return err;
-	}
-
+exports.lambdaHandler = async (event) => {
+  try {
+    const { body } = event;
+    console.log('Incoming body is: ', body);
+    let message;
+    if (typeof body === 'string') {
+      if (isBase64(body)) {
+        message = JSON.parse(base64.decode(body));
+      } else {
+        message = JSON.parse(body);
+      }
+    } else {
+      message = body;
+    }
+    await saveMessage(message);
+    const response = {
+      statusCode: 200,
+      body: JSON.stringify({
+        message,
+      }),
+    };
+    return response;
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
 };
