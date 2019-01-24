@@ -63,7 +63,7 @@ exports.postHandler = async (event, context) => {
 const handlePostback = async (chatId, postback) => {
   const { messsageDeliveryId, optionSelected } = postback.payload;
   const messageDeliveryItem = await MessageDelivery.queryOne('id').eq(messsageDeliveryId).exec();
-  if (messageDeliveryItem.responseStatus !== 'PENDING') {
+  if (messageDeliveryItem.responseStatus && messageDeliveryItem.responseStatus !== 'PENDING') {
     await callMessengerSendAPI(chatId, 'You have already responded to this option, don\'t guai lan:)');
     return {
       statusCode: 200,
