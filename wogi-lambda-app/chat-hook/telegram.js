@@ -1,3 +1,4 @@
+const axios = require('axios');
 const TelegramBot = require('node-telegram-bot-api');
 const { User } = require('./user');
 const { MessageDelivery } = require('./message-delivery.model');
@@ -114,6 +115,9 @@ const handleMessage = async (message) => {
 //   }
 // }
 
+const AGENCY_CALLBACK_URL = 'https://wogi.dcube.cf/mockAgency/hook';
+const callAgencyCallback = messageDelivery => axios.post(AGENCY_CALLBACK_URL, messageDelivery);
+
 const handleCallbackQuery = async (callbackQuery) => {
   const { data, from, message } = callbackQuery;
   const { optionSelected, messageDeliveryId } = JSON.parse(data);
@@ -146,6 +150,12 @@ const handleCallbackQuery = async (callbackQuery) => {
   }
   messageDelivery.responseStatus = optionSelected;
   await messageDelivery.save();
+
+  try {
+    await callAgencyCallback(messageDelivery);
+  } catch (e) {
+    console.log('Error calling agency', e);
+  }
 
   const result = await bot.sendMessage(chatId, 'Thank you! Your response has been sent to the agency');
   console.log('Telegram sendMessage result', result);
