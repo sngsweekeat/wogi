@@ -52,7 +52,6 @@ exports.postHandler = async (event) => {
     }
     return handleOtpText(messaging);
   }
-  console.log('---- MESSAGING: ', messaging);
   if (messaging.postback) {
     const chatId = messaging.sender.id;
     const payload = JSON.parse(messaging.postback.payload);
@@ -66,6 +65,7 @@ const AGENCY_CALLBACK_URL = 'https://wogi.dcube.cf/mockAgency/hook';
 const callAgencyCallback = messageDeliveryItem => axios.post(AGENCY_CALLBACK_URL, messageDeliveryItem);
 
 const handlePostback = async (chatId, payload) => {
+  console.log(`handling postback for chatId ${chatId} with payload: `, payload);
   const { messageDeliveryId, optionSelected } = payload;
   const messageDeliveryItem = await MessageDelivery.queryOne('id').eq(messageDeliveryId).exec();
   if (messageDeliveryItem.responseStatus && messageDeliveryItem.responseStatus !== 'PENDING') {
@@ -76,7 +76,6 @@ const handlePostback = async (chatId, payload) => {
     };
   }
   messageDeliveryItem.responseStatus = optionSelected;
-  console.log(messageDeliveryItem);
   await messageDeliveryItem.save();
   await callMessengerSendAPI(chatId, 'Thank you! Your response has been sent to the agency');
   await callAgencyCallback(messageDeliveryItem);
