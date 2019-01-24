@@ -46,6 +46,8 @@ exports.lambdaHandler = async (event) => {
       messageTitle,
     } = JSON.parse(event.body);
 
+    console.log('GOT CALLBACKk', responseStatus);
+
     const body = {
       messageTitle,
       message: `We have received your response: ${responseStatus}. Thank you and we are processing it now :)`,
@@ -53,8 +55,13 @@ exports.lambdaHandler = async (event) => {
       agencyId,
     };
 
-    const response = await axios.post(MESSAGE_URL, body);
-    return response;
+    await axios.post(MESSAGE_URL, body);
+    return {
+      statusCode: 201,
+      body: {
+        message: 'The message has been created successfully',
+      },
+    };
   } catch (err) {
     console.log(err);
     return err;
