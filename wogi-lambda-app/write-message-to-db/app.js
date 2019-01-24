@@ -33,7 +33,7 @@
  * @returns {Object} object.body - JSON Payload to be returned
  *
  */
-const createMessage = require("./message.model")
+const Message = require("./message.model").Message
 const uuidv1 = require("uuid/v1");
 const base64 = require("base-64");
 const isBase64 = require("is-base64");
@@ -41,7 +41,6 @@ const isBase64 = require("is-base64");
 const saveMessage = (message) => {
 	console.log("message is: ", message);
 	return new Promise((resolve, reject) => {
-		const Message = createMessage();
 		const messageToSave = new Message({ id: uuidv1(), ...message });
 
 		messageToSave.save(function (err) {
