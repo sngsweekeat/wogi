@@ -40,8 +40,7 @@ const axios = require("axios");
 const token = process.env.TELEGRAM_TOKEN;
 
 
-const bot = new TelegramBot(token, { polling: true });
-let response;
+const bot = new TelegramBot(token);
 
 const saveMessageDelivery = (msgDelivery) => {
 	console.log("Saving MessageDelivery: ", msgDelivery);
