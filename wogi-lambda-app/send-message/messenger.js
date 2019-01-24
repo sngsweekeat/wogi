@@ -33,7 +33,7 @@ exports.handler = async (chatId, message) => {
 			}
 		}
 		console.log("Sending message through messenger...");
-		result = await callMessengerSendAPI(chatId, msgWithButton);
+		const result = await callMessengerSendAPI(chatId, msgWithButton);
 		deliveryStatus = "SUCCESS";
 		console.log("Messenger result is: ", result);
 		return deliveryStatus;
