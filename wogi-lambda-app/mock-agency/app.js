@@ -57,13 +57,18 @@ exports.lambdaHandler = async (event) => {
 
     await axios.post(MESSAGE_URL, body);
     return {
-      statusCode: 201,
+      statusCode: 200,
       body: {
-        message: 'The message has been created successfully',
+        message: 'The message has been created, sent.',
       },
     };
   } catch (err) {
     console.log(err);
-    return err;
+    return {
+      statusCode: 200,
+      body: {
+        message: 'Message creation failed.',
+      },
+    };
   }
 };
