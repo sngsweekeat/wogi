@@ -119,7 +119,6 @@ const handleCallbackQuery = async (callbackQuery) => {
   const { optionSelected, messageDeliveryId } = JSON.parse(data);
   const chatId = from.id;
 
-  console.log('FETCHING MESSAGE DELIVERY');
   const messageDelivery = await MessageDelivery.get(messageDeliveryId);
 
   if (!messageDelivery) {
@@ -158,9 +157,7 @@ const handleCallbackQuery = async (callbackQuery) => {
 
 exports.handler = async (event) => {
   try {
-    console.log('EVENT HANDLED BY TELEGRAM', event);
     const body = JSON.parse(event.body);
-    console.log('EVENT BODY HANDLED BY TELEGRAM', body);
 
     if (body.message) {
       return await handleMessage(body.message);
