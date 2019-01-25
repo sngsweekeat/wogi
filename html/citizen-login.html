@@ -109,17 +109,13 @@
   <script>
 
     $(document).ready(function () {
-      console.log("document ready");
       $('#btn-login').on("click", function () {
         getOtp();
       });
 
       function getOtp() {
         var value = $('#txtPikaPass').val();
-        console.log("pikapass value: ", value);
-        console.log("value.trim()", value.trim());
         if (value.trim() != "") {
-          console.log("pikapass != empty string")
           var url = "https://wogi.dcube.cf/user/otp?id=" + value;
           try {
             $.ajax({
@@ -127,25 +123,17 @@
               url: url,
               dataType: "json"
             }).done(function (data) {
-              console.log("HELLOOOO");
-              console.log("body", data.otp);
               sessionStorage.setItem("OTP", data.otp);
               window.location.replace("/platforms/index.html");
 
             });
 
-
-            // $.get(url, function (data) {
-            //   alert(data);
-            // });
           } catch (exception) {
             console.log("exception", exception);
-            // alert(exception);
           }
 
         } else {
-          console.log("pikapass empty");
-          // alert("Please fill in your pikapass! :)");
+          alert("Please fill in your pikapass! :)");
         }
 
       }
