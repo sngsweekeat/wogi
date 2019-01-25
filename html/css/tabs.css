@@ -1,0 +1,100 @@
+.tabs li{
+  margin-bottom: 16px;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+p:not(:last-child) {
+  margin: 0 0 20px;
+}
+
+section.tabs {
+  display: none;
+  padding: 20px 0 0;
+  border-top: 1px solid #abc;
+}
+
+input {
+  display: none;
+}
+
+label {
+  display: inline-block;
+  margin: 0 0 -1px;
+  padding: 15px 25px;
+  font-weight: 600;
+  text-align: center;
+  color: #abc;
+  border: 1px solid transparent;
+}
+
+label:before {
+  font-family: fontawesome;
+  font-weight: normal;
+  margin-right: 10px;
+}
+
+/* label[for*="1"]:before {
+  content: "\f39f";
+} */
+/* label[for*="2"]:before {
+  content: "\f2c6";
+}
+label[for*="3"]:before {
+  content: "\f232";
+} */
+
+label:hover {
+  color: #789;
+  cursor: pointer;
+}
+
+input#tab1:checked + label {
+  color: #013a80;
+  border: 1px solid #013a80;
+  border-top: 2px solid #013a80;
+  border-bottom: 1px solid #fff;
+}
+
+input#tab2:checked + label {
+  color: #056be7;
+  border: 1px solid #056be7;
+  border-top: 2px solid #056be7;
+  border-bottom: 1px solid #fff;
+}
+
+input#tab3:checked + label {
+  color: #139654;
+  border: 1px solid #139654;
+  border-top: 2px solid #139654;
+  border-bottom: 1px solid #fff;
+}
+
+#tab1:checked ~ #content1,
+#tab2:checked ~ #content2,
+#tab3:checked ~ #content3,
+#tab4:checked ~ #content4 {
+  display: block;
+}
+
+@media screen and (max-width: 800px) {
+  label {
+    font-size: 0;
+  }
+  label:before {
+    margin: 0;
+    font-size: 18px;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  label {
+    padding: 15px;
+  }
+}
