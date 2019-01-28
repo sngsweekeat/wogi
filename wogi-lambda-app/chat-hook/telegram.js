@@ -35,14 +35,18 @@ const handleMessage = async (message) => {
   const chatId = message.chat.id;
 
   let user;
-  user = await User.queryOne('chatId').eq(chatId).exec();
+  try {
+    user = await User.queryOne('chatId').eq(chatId).exec();
 
-  if (user) {
-    await bot.sendMessage(chatId, 'It looks like you\'ve already registered for Notifications.sg. You\'re already able to receive notifications for government agencies through Telegram.');
+    if (user) {
+      await bot.sendMessage(chatId, 'It looks like you\'ve already registered for Notifications.sg. You\'re already able to receive notifications for government agencies through Telegram.');
 
-    return {
-      statusCode: 204,
-    };
+      return {
+        statusCode: 204,
+      };
+    }
+  } catch (e) {
+    console.log('Could not query user by chatId, probably chatId column has not yet been created', e);
   }
 
   if (!isValidOtp(messageText)) {
