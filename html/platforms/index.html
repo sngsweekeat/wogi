@@ -144,7 +144,8 @@
                         <div class="row">
                             <div class="col is-7" style="margin-left: 32px;">
                                 <blockquote>
-                                    Your unique one-time-password (OTP):<br><b class="txtOTP">eTrf-ZW2M-Dqsg</b>
+                                    Your unique one-time-password (OTP):<br>
+                                    <div class="txtOTP" id="lala">eTrf-ZW2M-Dqsg</div>
                                     <button class="sgds-button is-rounded is-primary is-dark is-small copy" style="margin-left: 10px;">
                                         <span><i class="far fa-copy"></i> Copy</span>
                                     </button>
@@ -211,7 +212,8 @@
                                         </a>
                                     </li>
                                     <li>
-                                        Search for <b>notifications.sg</b> by typing in the handle: <code>@notificationssg</code>
+                                        Search for <b>notifications.sg</b> by typing in the handle: <code>@wogi_bot</code>,
+                                        or by clicking on this link: <a href="https://telegram.me/wogi_bot">https://telegram.me/wogi_bot</a>
                                     </li>
                                     <li>
                                         Start the bot
@@ -297,13 +299,38 @@
         });
 
         function copyOtpToClipboard() {
-            var copyText = $('.txtOTP').html();
-            $('#hiddenOTP').val(copyText);
-            $('#hiddenOTP').select()
-            document.execCommand("Copy");
 
-            /* Alert the copied text */
-            alert("Copied the text: " + copyText);
+
+
+            var targetId = "_hiddenCopyText_";
+            // must use a temporary form element for the selection and copy
+            var source = document.getElementById('lala');
+            var target = document.createElement("textarea");
+            target.style.position = "absolute";
+            target.style.left = "-9999px";
+            target.style.top = "0";
+            target.id = targetId;
+            document.body.appendChild(target);
+            target.textContent = source.innerHTML;
+            // select the content
+            var currentFocus = document.activeElement;
+            target.focus();
+            target.setSelectionRange(0, target.value.length);
+
+            // copy the selection
+            var succeed;
+            try {
+                succeed = document.execCommand("copy");
+            } catch (e) {
+                succeed = false;
+            }
+            // restore original focus
+            if (currentFocus && typeof currentFocus.focus === "function") {
+                currentFocus.focus();
+            }
+
+            return succeed;
+
         }
 
     </script>
