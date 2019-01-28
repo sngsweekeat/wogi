@@ -91,7 +91,7 @@ const handleOtpText = async (messaging) => {
     const chatId = messaging.sender.id;
 
     if (!isValidOtp(messageText)) {
-      callMessengerSendAPI(chatId, 'Please enter a valid OTP to register.');
+      await callMessengerSendAPI(chatId, 'Please enter a valid OTP to register.');
       return {
         statusCode: 200,
         body: JSON.stringify({
@@ -148,7 +148,7 @@ const handleOtpText = async (messaging) => {
 const FB_MESSENGER_URL = 'https://graph.facebook.com/v2.6/me/messages';
 
 const callMessengerSendAPI = async (chatId, message) => {
-  console.log('callMessengerSendAPI...');
+  console.log('callMessengerSendAPI with message: ', message);
   // Construct the message body
   const body = {
     recipient: {
