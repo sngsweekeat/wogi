@@ -65,24 +65,29 @@ const AGENCY_CALLBACK_URL = 'https://wogi.dcube.cf/mockAgency/hook';
 const callAgencyCallback = messageDeliveryItem => axios.post(AGENCY_CALLBACK_URL, messageDeliveryItem);
 
 const handlePostback = async (chatId, payload) => {
-  console.log(`handling postback for chatId ${chatId} with payload: `, payload);
-  const { messageDeliveryId, optionSelected } = payload;
-  const messageDeliveryItem = await MessageDelivery.queryOne('id').eq(messageDeliveryId).exec();
-  if (messageDeliveryItem.responseStatus && messageDeliveryItem.responseStatus !== 'PENDING') {
-    await callMessengerSendAPI(chatId, 'You have already responded to this option');
+  try {
+    console.log(`handling postback for chatId ${chatId} with payload: `, payload);
+    const { messageDeliveryId, optionSelected } = payload;
+    const messageDeliveryItem = await MessageDelivery.queryOne('id').eq(messageDeliveryId).exec();
+    if (messageDeliveryItem.responseStatus && messageDeliveryItem.responseStatus !== 'PENDING') {
+      await callMessengerSendAPI(chatId, 'You have already responded to this option');
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ message: 'response already handled, not handling again' }),
+      };
+    }
+    messageDeliveryItem.responseStatus = optionSelected;
+    await messageDeliveryItem.save();
+    await callMessengerSendAPI(chatId, 'Thank you! Your response has been sent to the agency');
+    await callAgencyCallback(messageDeliveryItem);
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'response already handled, not handling again' }),
+      body: JSON.stringify({ message: 'response handled and saved' }),
     };
+  } catch (e) {
+    console.log('handling postback error: ', e);
+    return { statusCode: 204 };
   }
-  messageDeliveryItem.responseStatus = optionSelected;
-  await messageDeliveryItem.save();
-  await callMessengerSendAPI(chatId, 'Thank you! Your response has been sent to the agency');
-  await callAgencyCallback(messageDeliveryItem);
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ message: 'response handled and saved' }),
-  };
 };
 
 const handleOtpText = async (messaging) => {

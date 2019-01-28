@@ -50,11 +50,11 @@ exports.lambdaHandler = async (event) => {
 
     const body = {
       messageTitle,
-      message: `We have received your response: ${responseStatus}. Thank you and we are processing it now :)`,
+      message: `We have received your response: ${responseStatus}.\nThank you and we are processing it now :)`,
       users: [userId],
       agencyId,
     };
-
+    console.log('body is: ', body);
     await axios.post(MESSAGE_URL, body);
     return {
       statusCode: 200,
