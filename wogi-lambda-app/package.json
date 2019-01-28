@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "get-users": "cat wogi-users.csv | awk -F ',' '{ print $1 }'"
+    "get-users": "cat wogi-users.csv | awk -F ',' '{ print $1\",\" }' "
   },
   "repository": {
     "type": "git",
